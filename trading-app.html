@@ -361,13 +361,49 @@ nav.bottom button svg { width: 20px; height: 20px; }
       </div>
 
       <div class="divider"></div>
-      <div class="section-title">Confluences Present</div>
-
+      <div class="section-title">Liquidity & Delivery</div>
       <div class="concept-grid" id="tr-concepts">
         <button class="concept-btn" data-v="sweep">💧 Sweep</button>
-        <button class="concept-btn" data-v="fvg">📦 FVG</button>
-        <button class="concept-btn" data-v="ifvg">🔄 IFVG</button>
-        <button class="concept-btn" data-v="smt">↔ SMT</button>
+        <button class="concept-btn" data-v="fvgDelivery">📬 Delivering from FVG</button>
+        <button class="concept-btn" data-v="fvg">📦 FVG Entry</button>
+        <button class="concept-btn" data-v="ifvg">🔄 IFVG Entry</button>
+      </div>
+
+      <div class="section-title" style="margin-top:14px;">Momentum Through iFVG</div>
+      <div class="field">
+        <div class="btn-group" id="tr-momentum">
+          <button data-v="clean">⚡ Clean / No chop</button>
+          <button data-v="somechop">〰 Some chop</button>
+          <button data-v="heavychop">🌊 Heavy chop</button>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:14px;">Target Present</div>
+      <div class="field">
+        <div class="btn-group" id="tr-target" style="flex-wrap:wrap;">
+          <button data-v="EQH">EQH</button>
+          <button data-v="EQL">EQL</button>
+          <button data-v="ITH">ITH</button>
+          <button data-v="ITL">ITL</button>
+          <button data-v="Data High">Data High</button>
+          <button data-v="Data Low">Data Low</button>
+          <button data-v="LRLR">LRLR</button>
+          <button data-v="None">None</button>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:14px;">Premium / Discount</div>
+      <div class="field">
+        <div class="btn-group" id="tr-pd">
+          <button data-v="correct">✓ Correct side</button>
+          <button data-v="slightlyoff">⚠ Slightly off</button>
+          <button data-v="wrongside">✗ Wrong side</button>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:14px;">Additional Confluences</div>
+      <div class="concept-grid" id="tr-extra">
+        <button class="concept-btn" data-v="smt">↔ SMT Div</button>
         <button class="concept-btn" data-v="displacement">⚡ Displacement</button>
         <button class="concept-btn" data-v="eq">⚖ EQ (50%)</button>
         <button class="concept-btn" data-v="bias">✅ In Line w/ Bias</button>
@@ -753,68 +789,98 @@ function initScoreRows() {
 }
 
 function initConceptBtns() {
-  document.querySelectorAll('#tr-concepts .concept-btn').forEach(function(btn) {
+  // Toggle buttons (multi-select)
+  document.querySelectorAll('#tr-concepts .concept-btn, #tr-extra .concept-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       btn.classList.toggle('selected');
       updateAutoGrade();
     });
   });
-  // Also update grade when ES correlation changes
-  document.querySelectorAll('#tr-escorr button').forEach(function(btn) {
-    btn.addEventListener('click', function() { setTimeout(updateAutoGrade, 50); });
+  // Single-select button groups that affect grade
+  ['tr-momentum', 'tr-target', 'tr-pd', 'tr-escorr'].forEach(function(groupId) {
+    var group = document.getElementById(groupId);
+    if (!group) return;
+    group.querySelectorAll('button').forEach(function(btn) {
+      btn.addEventListener('click', function() { setTimeout(updateAutoGrade, 50); });
+    });
   });
 }
 
 function updateAutoGrade() {
-  var sweep  = !!document.querySelector('#tr-concepts .concept-btn[data-v="sweep"].selected');
-  var fvg    = !!document.querySelector('#tr-concepts .concept-btn[data-v="fvg"].selected');
-  var ifvg   = !!document.querySelector('#tr-concepts .concept-btn[data-v="ifvg"].selected');
-  var smt    = !!document.querySelector('#tr-concepts .concept-btn[data-v="smt"].selected');
-  var disp   = !!document.querySelector('#tr-concepts .concept-btn[data-v="displacement"].selected');
-  var eq     = !!document.querySelector('#tr-concepts .concept-btn[data-v="eq"].selected');
-  var inBias = !!document.querySelector('#tr-concepts .concept-btn[data-v="bias"].selected');
-  var esCorr = getSelected('tr-escorr');
+  var sweep       = !!document.querySelector('#tr-concepts .concept-btn[data-v="sweep"].selected');
+  var fvgDelivery = !!document.querySelector('#tr-concepts .concept-btn[data-v="fvgDelivery"].selected');
+  var fvg         = !!document.querySelector('#tr-concepts .concept-btn[data-v="fvg"].selected');
+  var ifvg        = !!document.querySelector('#tr-concepts .concept-btn[data-v="ifvg"].selected');
+  var smt         = !!document.querySelector('#tr-extra .concept-btn[data-v="smt"].selected');
+  var disp        = !!document.querySelector('#tr-extra .concept-btn[data-v="displacement"].selected');
+  var eq          = !!document.querySelector('#tr-extra .concept-btn[data-v="eq"].selected');
+  var inBias      = !!document.querySelector('#tr-extra .concept-btn[data-v="bias"].selected');
+  var momentum    = getSelected('tr-momentum');
+  var target      = getSelected('tr-target');
+  var pd          = getSelected('tr-pd');
+  var esCorr      = getSelected('tr-escorr');
 
-  var hasFVG  = fvg || ifvg;
-  var esGood  = esCorr === 'Aligned' || esCorr === 'Valid SMT Divergence';
-  var esBad   = esCorr === 'Chopping' || esCorr === 'Uncorrelated';
-  var hasNone = !sweep && !hasFVG && !disp;
+  var hasFVGentry  = fvg || ifvg;
+  var hasLiquidity = sweep || fvgDelivery;
+  var bothLiq      = sweep && fvgDelivery;
+  var hasTarget    = target && target !== 'None' && target !== '';
+  var esGood       = esCorr === 'Aligned' || esCorr === 'Valid SMT Divergence';
+  var esBad        = esCorr === 'Chopping' || esCorr === 'Uncorrelated';
+  var pdCorrect    = pd === 'correct';
+  var pdOff        = pd === 'slightlyoff';
+  var pdWrong      = pd === 'wrongside';
+  var cleanMomentum = momentum === 'clean';
+  var someChop      = momentum === 'somechop';
+  var heavyChop     = momentum === 'heavychop';
+
+  var nothingSelected = !sweep && !fvgDelivery && !fvg && !ifvg && !momentum && !target && !pd;
 
   var grade, reason;
   var gradeColors = {'A+':'#00d483','A':'#22c55e','A-':'#84cc16','B+':'#f59e0b','B':'#ef4444','B-':'#dc2626','C':'#991b1b'};
 
-  if (hasNone && !esCorr) {
-    grade = '—'; reason = 'Select confluences above';
-  } else if (sweep && hasFVG && disp && esGood && smt && inBias && eq) {
-    grade = 'A+'; reason = 'Full confluence — sweep + FVG + disp + SMT + EQ + bias + ES';
-  } else if (sweep && hasFVG && disp && esGood && smt && inBias) {
-    grade = 'A+'; reason = 'Sweep + FVG/IFVG + displacement + SMT + bias + ES aligned';
-  } else if (sweep && hasFVG && disp && esGood && inBias) {
-    grade = 'A'; reason = 'Sweep + FVG/IFVG + displacement + bias + ES aligned';
-  } else if (sweep && hasFVG && disp && esGood) {
-    grade = 'A'; reason = 'Sweep + FVG/IFVG + displacement + ES aligned';
-  } else if (sweep && hasFVG && disp && inBias && !esBad) {
-    grade = 'A'; reason = 'Sweep + FVG/IFVG + displacement + in bias';
-  } else if (sweep && hasFVG && disp && !esBad) {
-    grade = 'A-'; reason = 'Sweep + FVG/IFVG + displacement — ES unclear';
-  } else if ((sweep || hasFVG) && disp && esGood && inBias) {
-    grade = 'A-'; reason = 'Partial sweep/FVG + displacement + bias + ES';
-  } else if ((sweep || hasFVG) && disp && esGood) {
-    grade = 'A-'; reason = 'Partial confluence — some chop likely';
-  } else if ((sweep || hasFVG) && disp && !esBad) {
-    grade = 'A-'; reason = 'Partial confluence — watch for chop';
-  } else if ((sweep || hasFVG) && inBias && esBad) {
-    grade = 'B+'; reason = 'Setup present but ES chopping/uncorrelated';
-  } else if ((sweep || hasFVG) && esBad) {
-    grade = 'B+'; reason = 'Setup present but ES bad — reduce size';
-  } else if (!sweep && !hasFVG && disp && esGood) {
-    grade = 'B'; reason = 'No sweep or FVG — displacement only';
-  } else if (esBad && !disp && !inBias) {
-    grade = 'B-'; reason = 'ES bad + no displacement + against bias — skip';
-  } else if (hasNone) {
-    grade = 'C'; reason = 'No confluences — do not trade';
+  if (nothingSelected) {
+    grade = '—'; reason = 'Fill in confluences above';
+
+  // A+ = BOTH sweep AND fvgDelivery + clean momentum + target + correct P/D
+  } else if (bothLiq && hasFVGentry && cleanMomentum && hasTarget && pdCorrect) {
+    grade = 'A+'; reason = 'Sweep + FVG delivery + clean momentum + target + correct P/D';
+  } else if (bothLiq && hasFVGentry && cleanMomentum && hasTarget && !pdWrong) {
+    grade = 'A+'; reason = 'Sweep + FVG delivery + clean momentum + target';
+
+  // A = EITHER sweep OR delivery + clean momentum + target + correct P/D
+  } else if (hasLiquidity && hasFVGentry && cleanMomentum && hasTarget && pdCorrect) {
+    grade = 'A'; reason = 'Sweep or delivery + clean momentum + target + correct P/D';
+  } else if (hasLiquidity && hasFVGentry && cleanMomentum && hasTarget && pdOff) {
+    grade = 'A'; reason = 'Sweep or delivery + clean momentum + target';
+
+  // A- = sweep or delivery + SOME CHOP + target (P/D may be slightly off)
+  } else if (hasLiquidity && hasFVGentry && someChop && hasTarget) {
+    grade = 'A-'; reason = 'Sweep/delivery + some chop — wait for body close';
+  } else if (hasLiquidity && hasFVGentry && cleanMomentum && hasTarget && pdWrong) {
+    grade = 'A-'; reason = 'Good setup but wrong side of P/D';
+  } else if (bothLiq && hasFVGentry && someChop && !hasTarget) {
+    grade = 'A-'; reason = 'Strong liquidity but no clear target — reduce size';
+
+  // B+ = A- quality on choppy/bad days (some chop + obvious setup but conditions poor)
+  } else if (hasLiquidity && hasFVGentry && someChop && hasTarget && esBad) {
+    grade = 'B+'; reason = 'A- setup but ES bad — choppy conditions, 0.25% max';
+
+  // B = no sweep/delivery + heavy chop + target present
+  } else if (!hasLiquidity && hasFVGentry && heavyChop && hasTarget) {
+    grade = 'B'; reason = 'No sweep or delivery + heavy chop — skip';
+  } else if (hasLiquidity && heavyChop && pdWrong) {
+    grade = 'B'; reason = 'Heavy chop + wrong side of P/D — skip';
+
+  // B- = no targets, low momentum
+  } else if (!hasTarget && !cleanMomentum) {
+    grade = 'B-'; reason = 'No clear target + poor momentum — skip';
+
+  // C = nothing logical
+  } else if (!hasLiquidity && !hasFVGentry && !hasTarget) {
+    grade = 'C'; reason = 'No logical basis — do not trade';
+
   } else {
-    grade = 'B'; reason = 'Insufficient confluences — proceed with caution';
+    grade = 'B'; reason = 'Insufficient confluences — review before entering';
   }
 
   var valEl = document.getElementById('grade-auto-value');
@@ -892,6 +958,9 @@ function getYN(rowId) {
 function getConcept(v) {
   return document.querySelector('#tr-concepts .concept-btn[data-v="'+v+'"].selected') ? 'Yes' : 'No';
 }
+function getExtraConcept(v) {
+  return document.querySelector('#tr-extra .concept-btn[data-v="'+v+'"].selected') ? 'Yes' : 'No';
+}
 function now() { return new Date().toISOString(); }
 
 function toast(msg, type) {
@@ -968,12 +1037,16 @@ function submitTrade() {
     direction: getSelected('tr-direction'),
     grade: getSelected('tr-grade'),
     sweep: getConcept('sweep'),
+    fvgDelivery: getConcept('fvgDelivery'),
     fvg: getConcept('fvg'),
     ifvg: getConcept('ifvg'),
-    smt: getConcept('smt'),
-    displacement: getConcept('displacement'),
-    eq: getConcept('eq'),
-    inLineWithBias: getConcept('bias'),
+    smt: getExtraConcept('smt'),
+    displacement: getExtraConcept('displacement'),
+    eq: getExtraConcept('eq'),
+    inLineWithBias: getExtraConcept('bias'),
+    momentum: getSelected('tr-momentum'),
+    target: getSelected('tr-target'),
+    premiumDiscount: getSelected('tr-pd'),
     esCorrelation: getSelected('tr-escorr'),
     rrPlanned: document.getElementById('tr-rrplan').value || '0',
     rrActual: document.getElementById('tr-rract').value || '0',
