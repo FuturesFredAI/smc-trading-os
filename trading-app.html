@@ -413,8 +413,8 @@ nav.bottom button svg { width: 20px; height: 20px; }
         </div>
       </div>
       <div class="field">
-        <label>P&amp;L (£) — negative for loss</label>
-        <input type="number" id="tr-pnl" placeholder="-150 or 420" step="1">
+        <label>P&amp;L — numbers only, no £ sign (e.g. 450 or -150)</label>
+        <input type="number" id="tr-pnl" placeholder="450 or -150" step="1">
       </div>
 
       <div class="divider"></div>
@@ -438,11 +438,14 @@ nav.bottom button svg { width: 20px; height: 20px; }
           <button data-v="10">10</button>
         </div>
       </div>
-      <div class="field"><label>Would you take this exact trade again?</label>
-        <div class="btn-group" id="tr-wta">
-          <button data-v="Yes - good loss">✓ Good loss</button>
-          <button data-v="No - bad loss">✗ Bad loss</button>
-          <button data-v="Not a loss">N/A</button>
+      <div class="field"><label>How would you classify this trade?</label>
+        <div class="btn-group" id="tr-wta" style="flex-wrap:wrap;">
+          <button data-v="Good win">✓ Good win</button>
+          <button data-v="Bad win">⚠ Bad win</button>
+          <button data-v="Good loss">✓ Good loss</button>
+          <button data-v="Bad loss">✗ Bad loss</button>
+          <button data-v="Gamble">🎲 Gamble</button>
+          <button data-v="Break even">— Break even</button>
         </div>
       </div>
       <div class="field"><label>What did you do well?</label>
@@ -954,11 +957,8 @@ function submitTrade() {
   if (!url) { switchTab('settings', document.getElementById('nav-settings')); toast('Configure Web App URL in Settings first', 'error'); return; }
 
   var outcome = getSelected('tr-outcome');
-  var goodBadLoss = '';
   var wta = getSelected('tr-wta');
-  if (outcome === 'LOSS' || outcome === 'LOSS PARTIAL') {
-    goodBadLoss = wta === 'Yes - good loss' ? 'Good Loss' : wta === 'No - bad loss' ? 'Bad Loss' : '';
-  }
+  var goodBadLoss = wta || '';
 
   var data = {
     type: 'trade', timestamp: now(),
