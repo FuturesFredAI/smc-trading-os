@@ -295,7 +295,7 @@ nav.bottom button svg { width: 20px; height: 20px; }
       <div class="section-title">Environment</div>
 
       <div class="field"><label>Friends / others trading alongside you?</label>
-        <div class="yn-row" id="cl-friends"><button class="yes" data-v="Yes">⚠ Yes</button><button class="no" data-v="No">✓ No</button></div>
+        <div class="yn-row" id="cl-friends"><button class="no" data-v="Yes">⚠ Yes</button><button class="yes" data-v="No">✓ No</button></div>
       </div>
       <div class="field"><label>Additional notes</label>
         <textarea id="cl-notes" placeholder="Any other context for this session..."></textarea>
@@ -337,8 +337,17 @@ nav.bottom button svg { width: 20px; height: 20px; }
       </div>
 
       <div class="divider"></div>
-      <div class="section-title">Grade (DodgyDD)</div>
+      <div class="section-title">Grade (DodgyDD — auto-calculated)</div>
 
+      <div id="grade-display" style="padding:16px; border-radius:var(--radius); background:var(--surface); border:1px solid var(--border); text-align:center; margin-bottom:12px;">
+        <div style="font-size:11px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; margin-bottom:6px;">Suggested Grade</div>
+        <div id="grade-auto-value" style="font-size:36px; font-weight:900; color:var(--muted);">—</div>
+        <div id="grade-auto-reason" style="font-size:12px; color:var(--muted); margin-top:4px;"></div>
+      </div>
+      <div id="grade-warning" style="display:none; padding:10px 12px; border-radius:var(--radius); background:var(--red-bg); border:1px solid var(--red); color:var(--red); font-size:13px; font-weight:600; margin-bottom:12px;">
+        ⚠ B and below have 0% win rate. Skip this trade.
+      </div>
+      <div style="font-size:11px; color:var(--muted); margin-bottom:8px; text-align:center;">Override if needed:</div>
       <div class="field">
         <div class="btn-group grade" id="tr-grade">
           <button data-v="A+">A+</button>
@@ -350,19 +359,18 @@ nav.bottom button svg { width: 20px; height: 20px; }
           <button data-v="C">C</button>
         </div>
       </div>
-      <div id="grade-warning" style="display:none; padding:10px 12px; border-radius:var(--radius); background:var(--red-bg); border:1px solid var(--red); color:var(--red); font-size:13px; font-weight:600; margin-bottom:12px;">
-        ⚠ B and below have 0% win rate. Skip this trade.
-      </div>
 
       <div class="divider"></div>
-      <div class="section-title">Concepts Present</div>
+      <div class="section-title">Confluences Present</div>
 
       <div class="concept-grid" id="tr-concepts">
-        <button class="concept-btn" data-v="sweep" data-field="tr-sweep">💧 Sweep</button>
-        <button class="concept-btn" data-v="fvg" data-field="tr-fvg">📦 FVG</button>
-        <button class="concept-btn" data-v="ifvg" data-field="tr-ifvg">🔄 IFVG</button>
-        <button class="concept-btn" data-v="smt" data-field="tr-smt">↔ SMT</button>
-        <button class="concept-btn" data-v="displacement" data-field="tr-disp">⚡ Displacement</button>
+        <button class="concept-btn" data-v="sweep">💧 Sweep</button>
+        <button class="concept-btn" data-v="fvg">📦 FVG</button>
+        <button class="concept-btn" data-v="ifvg">🔄 IFVG</button>
+        <button class="concept-btn" data-v="smt">↔ SMT</button>
+        <button class="concept-btn" data-v="displacement">⚡ Displacement</button>
+        <button class="concept-btn" data-v="eq">⚖ EQ (50%)</button>
+        <button class="concept-btn" data-v="bias">✅ In Line w/ Bias</button>
       </div>
 
       <div class="divider"></div>
@@ -452,7 +460,7 @@ nav.bottom button svg { width: 20px; height: 20px; }
         <p>Tap to select chart screenshot</p>
         <strong id="photo-filename">No photo selected</strong>
       </div>
-      <input type="file" id="photo-input" accept="image/*" capture="environment">
+      <input type="file" id="photo-input" accept="image/*">
       <img id="photo-preview" alt="Chart preview">
 
       <button class="submit-btn" id="tr-submit" onclick="submitTrade()">Log Trade</button>
@@ -743,8 +751,83 @@ function initScoreRows() {
 
 function initConceptBtns() {
   document.querySelectorAll('#tr-concepts .concept-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() { btn.classList.toggle('selected'); });
+    btn.addEventListener('click', function() {
+      btn.classList.toggle('selected');
+      updateAutoGrade();
+    });
   });
+  // Also update grade when ES correlation changes
+  document.querySelectorAll('#tr-escorr button').forEach(function(btn) {
+    btn.addEventListener('click', function() { setTimeout(updateAutoGrade, 50); });
+  });
+}
+
+function updateAutoGrade() {
+  var sweep  = !!document.querySelector('#tr-concepts .concept-btn[data-v="sweep"].selected');
+  var fvg    = !!document.querySelector('#tr-concepts .concept-btn[data-v="fvg"].selected');
+  var ifvg   = !!document.querySelector('#tr-concepts .concept-btn[data-v="ifvg"].selected');
+  var smt    = !!document.querySelector('#tr-concepts .concept-btn[data-v="smt"].selected');
+  var disp   = !!document.querySelector('#tr-concepts .concept-btn[data-v="displacement"].selected');
+  var eq     = !!document.querySelector('#tr-concepts .concept-btn[data-v="eq"].selected');
+  var inBias = !!document.querySelector('#tr-concepts .concept-btn[data-v="bias"].selected');
+  var esCorr = getSelected('tr-escorr');
+
+  var hasFVG  = fvg || ifvg;
+  var esGood  = esCorr === 'Aligned' || esCorr === 'Valid SMT Divergence';
+  var esBad   = esCorr === 'Chopping' || esCorr === 'Uncorrelated';
+  var hasNone = !sweep && !hasFVG && !disp;
+
+  var grade, reason;
+  var gradeColors = {'A+':'#00d483','A':'#22c55e','A-':'#84cc16','B+':'#f59e0b','B':'#ef4444','B-':'#dc2626','C':'#991b1b'};
+
+  if (hasNone && !esCorr) {
+    grade = '—'; reason = 'Select confluences above';
+  } else if (sweep && hasFVG && disp && esGood && smt && inBias && eq) {
+    grade = 'A+'; reason = 'Full confluence — sweep + FVG + disp + SMT + EQ + bias + ES';
+  } else if (sweep && hasFVG && disp && esGood && smt && inBias) {
+    grade = 'A+'; reason = 'Sweep + FVG/IFVG + displacement + SMT + bias + ES aligned';
+  } else if (sweep && hasFVG && disp && esGood && inBias) {
+    grade = 'A'; reason = 'Sweep + FVG/IFVG + displacement + bias + ES aligned';
+  } else if (sweep && hasFVG && disp && esGood) {
+    grade = 'A'; reason = 'Sweep + FVG/IFVG + displacement + ES aligned';
+  } else if (sweep && hasFVG && disp && inBias && !esBad) {
+    grade = 'A'; reason = 'Sweep + FVG/IFVG + displacement + in bias';
+  } else if (sweep && hasFVG && disp && !esBad) {
+    grade = 'A-'; reason = 'Sweep + FVG/IFVG + displacement — ES unclear';
+  } else if ((sweep || hasFVG) && disp && esGood && inBias) {
+    grade = 'A-'; reason = 'Partial sweep/FVG + displacement + bias + ES';
+  } else if ((sweep || hasFVG) && disp && esGood) {
+    grade = 'A-'; reason = 'Partial confluence — some chop likely';
+  } else if ((sweep || hasFVG) && disp && !esBad) {
+    grade = 'A-'; reason = 'Partial confluence — watch for chop';
+  } else if ((sweep || hasFVG) && inBias && esBad) {
+    grade = 'B+'; reason = 'Setup present but ES chopping/uncorrelated';
+  } else if ((sweep || hasFVG) && esBad) {
+    grade = 'B+'; reason = 'Setup present but ES bad — reduce size';
+  } else if (!sweep && !hasFVG && disp && esGood) {
+    grade = 'B'; reason = 'No sweep or FVG — displacement only';
+  } else if (esBad && !disp && !inBias) {
+    grade = 'B-'; reason = 'ES bad + no displacement + against bias — skip';
+  } else if (hasNone) {
+    grade = 'C'; reason = 'No confluences — do not trade';
+  } else {
+    grade = 'B'; reason = 'Insufficient confluences — proceed with caution';
+  }
+
+  var valEl = document.getElementById('grade-auto-value');
+  var reasonEl = document.getElementById('grade-auto-reason');
+  valEl.textContent = grade;
+  valEl.style.color = gradeColors[grade] || 'var(--muted)';
+  reasonEl.textContent = reason || '';
+
+  // Auto-select in the override buttons
+  if (grade !== '—') {
+    document.querySelectorAll('#tr-grade button').forEach(function(b) {
+      b.classList.toggle('selected', b.dataset.v === grade);
+    });
+    var bad = ['B','B-','C'];
+    document.getElementById('grade-warning').style.display = bad.indexOf(grade) > -1 ? 'block' : 'none';
+  }
 }
 
 // ── STATE GATE ─────────────────────────────────────────────────
@@ -889,6 +972,8 @@ function submitTrade() {
     ifvg: getConcept('ifvg'),
     smt: getConcept('smt'),
     displacement: getConcept('displacement'),
+    eq: getConcept('eq'),
+    inLineWithBias: getConcept('bias'),
     esCorrelation: getSelected('tr-escorr'),
     rrPlanned: document.getElementById('tr-rrplan').value || '0',
     rrActual: document.getElementById('tr-rract').value || '0',
