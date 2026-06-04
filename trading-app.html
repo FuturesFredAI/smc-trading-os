@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SMC Trading OS</title>
+<style>
+/* ── DESIGN TOKENS ───────────────────────────────────────────── */
+:root {
+  --bg:       #080c0e;
+  --bg2:      #0f1318;
+  --surface:  #161c22;
+  --surface2: #1e252e;
+  --border:   #2a333e;
+  --text:     #e8edf2;
+  --muted:    #7a8898;
+  --green:    #00d483;
+  --green-bg: rgba(0,212,131,.12);
+  --red:      #ff4455;
+  --red-bg:   rgba(255,68,85,.12);
+  --amber:    #f59e0b;
+  --amber-bg: rgba(245,158,11,.12);
+  --blue:     #3b82f6;
+  --blue-bg:  rgba(59,130,246,.12);
+  --radius:   10px;
+  --nav-h:    64px;
+  --header-h: 52px;
+}
+/* ── RESET ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif; font-size: 15px; -webkit-font-smoothing: antialiased; }
+input, textarea, select, button { font-family: inherit; font-size: inherit; }
+button { cursor: pointer; border: none; background: none; }
+
+/* ── APP SHELL ──────────────────────────────────────────────── */
+#app { display: flex; flex-direction: column; height: 100dvh; max-width: 480px; margin: 0 auto; }
+header { height: var(--header-h); min-height: var(--header-h); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+header h1 { font-size: 16px; font-weight: 700; letter-spacing: .04em; color: var(--text); }
+header .header-sub { font-size: 11px; color: var(--muted); letter-spacing: .06em; }
+#main { flex: 1; overflow: hidden; position: relative; }
+.panel { position: absolute; inset: 0; overflow-y: auto; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); display: none; }
+.panel.active { display: block; }
+nav.bottom { height: var(--nav-h); min-height: var(--nav-h); display: flex; background: var(--bg2); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); }
+nav.bottom button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--muted); font-size: 10px; letter-spacing: .04em; font-weight: 600; text-transform: uppercase; transition: color .15s; }
+nav.bottom button.active { color: var(--green); }
+nav.bottom button svg { width: 20px; height: 20px; }
+
+/* ── SECTION HEADINGS ───────────────────────────────────────── */
+.section-title { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 20px 0 8px; }
+.section-title:first-child { margin-top: 0; }
+
+/* ── FORM ELEMENTS ──────────────────────────────────────────── */
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; letter-spacing: .03em; }
+.field input[type=text], .field input[type=number], .field input[type=date], .field textarea, .field select {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+  color: var(--text); padding: 11px 13px; font-size: 15px; outline: none; transition: border-color .15s;
+}
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--blue); }
+.field textarea { resize: vertical; min-height: 72px; }
+.field select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a8898' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 13px center; padding-right: 36px; }
+
+/* Button groups */
+.btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn-group button { flex: 1; min-width: 60px; padding: 10px 8px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2); color: var(--muted); font-size: 13px; font-weight: 600; transition: all .15s; min-height: 44px; }
+.btn-group button.selected { border-color: var(--blue); background: var(--blue-bg); color: var(--text); }
+.btn-group.grade button[data-v="A+"].selected  { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+.btn-group.grade button[data-v="A"].selected   { border-color: #22c55e; background: rgba(34,197,94,.12); color: #22c55e; }
+.btn-group.grade button[data-v="A-"].selected  { border-color: #84cc16; background: rgba(132,204,22,.12); color: #84cc16; }
+.btn-group.grade button[data-v="B+"].selected  { border-color: var(--amber); background: var(--amber-bg); color: var(--amber); }
+.btn-group.grade button[data-v="B"].selected, .btn-group.grade button[data-v="B-"].selected { border-color: var(--red); background: var(--red-bg); color: var(--red); }
+.btn-group.grade button[data-v="C"].selected   { border-color: #991b1b; background: rgba(153,27,27,.15); color: #ff7a7a; }
+.btn-group.outcome button[data-v="WIN"].selected, .btn-group.outcome button[data-v="WIN PARTIAL"].selected { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+.btn-group.outcome button[data-v="LOSS"].selected, .btn-group.outcome button[data-v="LOSS PARTIAL"].selected { border-color: var(--red); background: var(--red-bg); color: var(--red); }
+.btn-group.outcome button[data-v="GAMBLE"].selected { border-color: #ff00ff; background: rgba(255,0,255,.1); color: #ff66ff; }
+.btn-group.outcome button[data-v="BREAK EVEN"].selected { border-color: var(--amber); background: var(--amber-bg); color: var(--amber); }
+
+/* Score buttons */
+.score-row { display: flex; gap: 4px; }
+.score-row button { flex: 1; height: 40px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); font-size: 13px; font-weight: 700; transition: all .15s; }
+.score-row button.selected { border-color: var(--blue); background: var(--blue-bg); color: var(--text); }
+.score-row button[data-v="8"].selected, .score-row button[data-v="9"].selected, .score-row button[data-v="10"].selected { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+.score-row button[data-v="1"].selected, .score-row button[data-v="2"].selected, .score-row button[data-v="3"].selected { border-color: var(--red); background: var(--red-bg); color: var(--red); }
+
+/* Yes/No toggle */
+.yn-row { display: flex; gap: 8px; }
+.yn-row button { flex: 1; height: 44px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2); color: var(--muted); font-size: 14px; font-weight: 600; transition: all .15s; }
+.yn-row button.yes.selected { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+.yn-row button.no.selected  { border-color: var(--red); background: var(--red-bg); color: var(--red); }
+.yn-row button.neutral.selected { border-color: var(--amber); background: var(--amber-bg); color: var(--amber); }
+
+/* State gate banner */
+#state-gate { padding: 14px 16px; border-radius: var(--radius); margin-bottom: 16px; text-align: center; font-weight: 700; font-size: 16px; letter-spacing: .06em; text-transform: uppercase; border: 1px solid var(--border); background: var(--surface); color: var(--muted); transition: all .3s; }
+#state-gate.pass { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+#state-gate.fail { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+
+/* Divider */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* Concept toggles */
+.concept-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.concept-btn { padding: 12px 10px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2); color: var(--muted); font-size: 13px; font-weight: 600; text-align: center; transition: all .15s; min-height: 44px; }
+.concept-btn.selected { border-color: var(--blue); background: var(--blue-bg); color: var(--text); }
+
+/* Photo upload */
+#photo-upload-area { border: 2px dashed var(--border); border-radius: var(--radius); padding: 24px 16px; text-align: center; cursor: pointer; transition: all .15s; background: var(--surface2); }
+#photo-upload-area:hover, #photo-upload-area.dragover { border-color: var(--blue); background: var(--blue-bg); }
+#photo-upload-area .upload-icon { font-size: 32px; margin-bottom: 8px; }
+#photo-upload-area p { color: var(--muted); font-size: 13px; }
+#photo-upload-area strong { color: var(--text); display: block; margin-top: 4px; font-size: 14px; }
+#photo-preview { width: 100%; border-radius: var(--radius); margin-top: 10px; display: none; border: 1px solid var(--border); }
+#photo-input { display: none; }
+
+/* Submit button */
+.submit-btn { width: 100%; padding: 16px; border-radius: var(--radius); background: var(--blue); color: #fff; font-size: 16px; font-weight: 700; letter-spacing: .04em; margin-top: 24px; transition: opacity .15s; }
+.submit-btn:active { opacity: .8; }
+.submit-btn:disabled { opacity: .4; cursor: not-allowed; }
+.submit-btn.loading { opacity: .6; }
+
+/* Toast */
+#toast { position: fixed; bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 50px; font-size: 14px; font-weight: 600; opacity: 0; transition: all .3s; z-index: 100; white-space: nowrap; pointer-events: none; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.success { border-color: var(--green); color: var(--green); }
+#toast.error { border-color: var(--red); color: var(--red); }
+
+/* ── DASHBOARD ───────────────────────────────────────────────── */
+.stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 12px; }
+.stat-card .stat-val { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+.stat-card .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+.stat-card.green .stat-val { color: var(--green); }
+.stat-card.red .stat-val { color: var(--red); }
+.stat-card.amber .stat-val { color: var(--amber); }
+.grade-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.grade-chip { flex: 1; min-width: 70px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 8px; text-align: center; }
+.grade-chip .chip-grade { font-size: 14px; font-weight: 800; margin-bottom: 2px; }
+.grade-chip .chip-wr { font-size: 12px; color: var(--muted); }
+.grade-chip .chip-n { font-size: 10px; color: var(--muted); margin-top: 2px; }
+#equity-chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
+#equity-chart-wrap h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 12px; }
+#equity-canvas { width: 100%; height: 120px; }
+.violation-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; }
+.violation-list .v-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 14px; border-bottom: 1px solid var(--border); }
+.violation-list .v-row:last-child { border-bottom: none; }
+.violation-list .v-label { font-size: 13px; color: var(--muted); }
+.violation-list .v-count { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.v-count.bad { color: var(--red); }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
+.refresh-btn { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+
+/* ── SETTINGS ───────────────────────────────────────────────── */
+.settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+.settings-card h3 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.settings-card p { font-size: 12px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+.settings-card input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 10px 12px; font-size: 13px; outline: none; }
+.settings-card input:focus { border-color: var(--blue); }
+.save-btn { width: 100%; margin-top: 10px; padding: 11px; border-radius: 8px; background: var(--blue); color: #fff; font-size: 14px; font-weight: 700; }
+.code-block { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; color: #84cc16; line-height: 1.6; overflow-x: auto; white-space: pre; margin: 10px 0; }
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.status-dot.connected { background: var(--green); }
+.status-dot.disconnected { background: var(--red); }
+#conn-status { font-size: 13px; font-weight: 600; display: flex; align-items: center; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <div>
+      <h1>SMC Trading OS</h1>
+      <div class="header-sub" id="header-sub">NQ/MNQ Futures</div>
+    </div>
+    <div id="conn-status"><span class="status-dot disconnected" id="conn-dot"></span><span id="conn-text">Not configured</span></div>
+  </header>
+
+  <!-- PANELS -->
+  <div id="main">
+
+    <!-- ═══════════════════════════════════════════ CHECKLIST PANEL -->
+    <div class="panel active" id="panel-checklist">
+      <div class="section-title">Session Info</div>
+
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="cl-date">
+      </div>
+      <div class="field">
+        <label>Session</label>
+        <div class="btn-group" id="cl-session">
+          <button data-v="NY Open">NY Open</button>
+          <button data-v="London Open">London</button>
+          <button data-v="NY PM">NY PM</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Account</label>
+        <div class="btn-group" id="cl-account">
+          <button data-v="NQ Live">NQ Live</button>
+          <button data-v="MNQ Live">MNQ Live</button>
+          <button data-v="Funded Eval">Eval</button>
+          <button data-v="Paper">Paper</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-title">State Assessment</div>
+
+      <div class="field">
+        <label>Physical State (sleep · food · hydration)</label>
+        <div class="score-row" id="cl-physical">
+          <button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button>
+          <button data-v="4">4</button><button data-v="5">5</button><button data-v="6">6</button>
+          <button data-v="7">7</button><button data-v="8">8</button><button data-v="9">9</button>
+          <button data-v="10">10</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Mental State (stress · focus · emotions)</label>
+        <div class="score-row" id="cl-mental">
+          <button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button>
+          <button data-v="4">4</button><button data-v="5">5</button><button data-v="6">6</button>
+          <button data-v="7">7</button><button data-v="8">8</button><button data-v="9">9</button>
+          <button data-v="10">10</button>
+        </div>
+      </div>
+
+      <div id="state-gate">— STATE GATE —</div>
+
+      <div class="divider"></div>
+      <div class="section-title">Pre-Market Prep</div>
+
+      <div class="field"><label>Economic calendar checked?</label>
+        <div class="yn-row" id="cl-calendar"><button class="yes" data-v="Yes">✓ Yes</button><button class="no" data-v="No">✗ No</button></div>
+      </div>
+      <div class="field"><label>Prior day high & low marked?</label>
+        <div class="yn-row" id="cl-priorday"><button class="yes" data-v="Yes">✓ Yes</button><button class="no" data-v="No">✗ No</button></div>
+      </div>
+      <div class="field"><label>Asian session H/L marked?</label>
+        <div class="yn-row" id="cl-asia"><button class="yes" data-v="Yes">✓ Yes</button><button class="no" data-v="No">✗ No</button></div>
+      </div>
+      <div class="field"><label>London sweep level identified?</label>
+        <div class="yn-row" id="cl-london">
+          <button class="yes" data-v="Yes">✓ Yes</button>
+          <button class="no" data-v="No">✗ No</button>
+          <button class="neutral" data-v="No clear sweep">— Unclear</button>
+        </div>
+      </div>
+      <div class="field"><label>Unmitigated FVGs marked?</label>
+        <div class="yn-row" id="cl-fvgs"><button class="yes" data-v="Yes">✓ Yes</button><button class="no" data-v="No">✗ No</button></div>
+      </div>
+      <div class="field"><label>HTF bias confirmed (1H/4H)?</label>
+        <div class="yn-row" id="cl-htf"><button class="yes" data-v="Yes">✓ Yes</button><button class="no" data-v="No">✗ No</button></div>
+      </div>
+      <div class="field"><label>At least one valid target identified?</label>
+        <div class="yn-row" id="cl-targets"><button class="yes" data-v="Yes">✓ Yes</button><button class="no" data-v="No">✗ No</button></div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-title">ES / Correlation Check</div>
+
+      <div class="field"><label>ES chart open alongside NQ?</label>
+        <div class="yn-row" id="cl-esopen"><button class="yes" data-v="Yes">✓ Yes</button><button class="no" data-v="No">✗ No</button></div>
+      </div>
+      <div class="field"><label>What is ES doing right now?</label>
+        <div class="btn-group" id="cl-esdirection">
+          <button data-v="Directional">Directional</button>
+          <button data-v="Chopping">Chopping</button>
+          <button data-v="Unclear">Unclear</button>
+        </div>
+      </div>
+      <div class="field"><label>SMT divergence checked?</label>
+        <div class="btn-group" id="cl-smt">
+          <button data-v="Yes - present">✓ Present</button>
+          <button data-v="Yes - no divergence">✓ None</button>
+          <button data-v="No">✗ No</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-title">Bias</div>
+
+      <div class="field"><label>Directional bias</label>
+        <div class="btn-group" id="cl-bias">
+          <button data-v="Bullish">▲ Bullish</button>
+          <button data-v="Bearish">▼ Bearish</button>
+          <button data-v="Neutral">— Neutral</button>
+        </div>
+      </div>
+      <div class="field"><label>Why? (one sentence)</label>
+        <textarea id="cl-biasreason" placeholder="HTF shows bearish displacement off premium FVG, SSL below 17,800 as target..."></textarea>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-title">Environment</div>
+
+      <div class="field"><label>Friends / others trading alongside you?</label>
+        <div class="yn-row" id="cl-friends"><button class="yes" data-v="Yes">⚠ Yes</button><button class="no" data-v="No">✓ No</button></div>
+      </div>
+      <div class="field"><label>Additional notes</label>
+        <textarea id="cl-notes" placeholder="Any other context for this session..."></textarea>
+      </div>
+
+      <button class="submit-btn" id="cl-submit" onclick="submitChecklist()">Submit Checklist</button>
+    </div><!-- /checklist -->
+
+    <!-- ═══════════════════════════════════════════ TRADE PANEL -->
+    <div class="panel" id="panel-trade">
+      <div class="section-title">Trade Details</div>
+
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="tr-date">
+      </div>
+      <div class="field">
+        <label>Session</label>
+        <div class="btn-group" id="tr-session">
+          <button data-v="NY Open">NY Open</button>
+          <button data-v="London Open">London</button>
+          <button data-v="NY PM">NY PM</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Instrument</label>
+        <div class="btn-group" id="tr-instrument">
+          <button data-v="NQ">NQ</button>
+          <button data-v="MNQ">MNQ</button>
+          <button data-v="ES">ES</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Direction</label>
+        <div class="btn-group" id="tr-direction">
+          <button data-v="LONG">▲ LONG</button>
+          <button data-v="SHORT">▼ SHORT</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-title">Grade (DodgyDD)</div>
+
+      <div class="field">
+        <div class="btn-group grade" id="tr-grade">
+          <button data-v="A+">A+</button>
+          <button data-v="A">A</button>
+          <button data-v="A-">A-</button>
+          <button data-v="B+">B+</button>
+          <button data-v="B">B</button>
+          <button data-v="B-">B-</button>
+          <button data-v="C">C</button>
+        </div>
+      </div>
+      <div id="grade-warning" style="display:none; padding:10px 12px; border-radius:var(--radius); background:var(--red-bg); border:1px solid var(--red); color:var(--red); font-size:13px; font-weight:600; margin-bottom:12px;">
+        ⚠ B and below have 0% win rate. Skip this trade.
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-title">Concepts Present</div>
+
+      <div class="concept-grid" id="tr-concepts">
+        <button class="concept-btn" data-v="sweep" data-field="tr-sweep">💧 Sweep</button>
+        <button class="concept-btn" data-v="fvg" data-field="tr-fvg">📦 FVG</button>
+        <button class="concept-btn" data-v="ifvg" data-field="tr-ifvg">🔄 IFVG</button>
+        <button class="concept-btn" data-v="smt" data-field="tr-smt">↔ SMT</button>
+        <button class="concept-btn" data-v="displacement" data-field="tr-disp">⚡ Displacement</button>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-title">ES Correlation at Entry</div>
+
+      <div class="field">
+        <div class="btn-group" id="tr-escorr">
+          <button data-v="Aligned">Aligned</button>
+          <button data-v="Valid SMT Divergence">SMT Div</button>
+          <button data-v="Uncorrelated">Uncorr.</button>
+          <button data-v="Chopping">Chop</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-title">Risk & Reward</div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="field">
+          <label>R:R Planned</label>
+          <input type="number" id="tr-rrplan" placeholder="2.5" step="0.1" min="0">
+        </div>
+        <div class="field">
+          <label>R:R Actual</label>
+          <input type="number" id="tr-rract" placeholder="0" step="0.1" min="0">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-title">Outcome</div>
+
+      <div class="field">
+        <div class="btn-group outcome" id="tr-outcome" style="flex-wrap:wrap;">
+          <button data-v="WIN">WIN</button>
+          <button data-v="LOSS">LOSS</button>
+          <button data-v="BREAK EVEN">BE</button>
+          <button data-v="WIN PARTIAL">WIN PART.</button>
+          <button data-v="LOSS PARTIAL">LOSS PART.</button>
+          <button data-v="GAMBLE">GAMBLE</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>P&amp;L (£) — negative for loss</label>
+        <input type="number" id="tr-pnl" placeholder="-150 or 420" step="1">
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-title">Self Assessment</div>
+
+      <div class="field">
+        <label>Emotion at entry (1=emotional · 10=calm)</label>
+        <div class="score-row" id="tr-emotion">
+          <button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button>
+          <button data-v="4">4</button><button data-v="5">5</button><button data-v="6">6</button>
+          <button data-v="7">7</button><button data-v="8">8</button><button data-v="9">9</button>
+          <button data-v="10">10</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Execution score (1=poor · 10=perfect)</label>
+        <div class="score-row" id="tr-exec">
+          <button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button>
+          <button data-v="4">4</button><button data-v="5">5</button><button data-v="6">6</button>
+          <button data-v="7">7</button><button data-v="8">8</button><button data-v="9">9</button>
+          <button data-v="10">10</button>
+        </div>
+      </div>
+      <div class="field"><label>Would you take this exact trade again?</label>
+        <div class="btn-group" id="tr-wta">
+          <button data-v="Yes - good loss">✓ Good loss</button>
+          <button data-v="No - bad loss">✗ Bad loss</button>
+          <button data-v="Not a loss">N/A</button>
+        </div>
+      </div>
+      <div class="field"><label>What did you do well?</label>
+        <textarea id="tr-well" placeholder="Waited patiently for the FVG retest..."></textarea>
+      </div>
+      <div class="field"><label>What would you change?</label>
+        <textarea id="tr-change" placeholder="Should have checked ES before entering..."></textarea>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-title">Chart Photo</div>
+
+      <div id="photo-upload-area" onclick="document.getElementById('photo-input').click()">
+        <div class="upload-icon">📷</div>
+        <p>Tap to select chart screenshot</p>
+        <strong id="photo-filename">No photo selected</strong>
+      </div>
+      <input type="file" id="photo-input" accept="image/*" capture="environment">
+      <img id="photo-preview" alt="Chart preview">
+
+      <button class="submit-btn" id="tr-submit" onclick="submitTrade()">Log Trade</button>
+    </div><!-- /trade -->
+
+    <!-- ═══════════════════════════════════════════ DASHBOARD PANEL -->
+    <div class="panel" id="panel-dashboard">
+      <button class="refresh-btn" onclick="loadDashboard()">↻ Refresh from Sheet</button>
+
+      <div class="section-title">Overview</div>
+      <div class="stat-row">
+        <div class="stat-card green"><div class="stat-val" id="d-wr">—</div><div class="stat-label">Win Rate</div></div>
+        <div class="stat-card"><div class="stat-val" id="d-trades">—</div><div class="stat-label">Total Trades</div></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card" id="d-pnl-card"><div class="stat-val" id="d-pnl">—</div><div class="stat-label">Total P&L</div></div>
+        <div class="stat-card amber"><div class="stat-val" id="d-violations">—</div><div class="stat-label">Violations</div></div>
+      </div>
+
+      <div class="section-title">Win Rate by Grade</div>
+      <div class="grade-row" id="d-grades">
+        <div class="empty-state" style="padding:16px;width:100%">Load data to see grade breakdown</div>
+      </div>
+
+      <div id="equity-chart-wrap">
+        <h3>Equity Curve</h3>
+        <canvas id="equity-canvas"></canvas>
+      </div>
+
+      <div class="section-title">Rule Violations</div>
+      <div class="violation-list">
+        <div class="v-row"><span class="v-label">Gambles</span><span class="v-count bad" id="dv-gamble">—</span></div>
+        <div class="v-row"><span class="v-label">B/C grades taken</span><span class="v-count bad" id="dv-grade">—</span></div>
+        <div class="v-row"><span class="v-label">Low state trades (< 7)</span><span class="v-count bad" id="dv-state">—</span></div>
+        <div class="v-row"><span class="v-label">Traded with friends nearby</span><span class="v-count bad" id="dv-friends">—</span></div>
+        <div class="v-row"><span class="v-label">ES chopping/uncorrelated</span><span class="v-count bad" id="dv-es">—</span></div>
+      </div>
+    </div><!-- /dashboard -->
+
+    <!-- ═══════════════════════════════════════════ SETTINGS PANEL -->
+    <div class="panel" id="panel-settings">
+      <div class="section-title">Google Sheets Connection</div>
+
+      <div class="settings-card">
+        <h3>Apps Script Web App URL</h3>
+        <p>Paste your deployed Web App URL here. This is how the app writes to your Google Sheet. See the setup instructions below.</p>
+        <input type="text" id="s-webapp-url" placeholder="https://script.google.com/macros/s/..." spellcheck="false">
+        <button class="save-btn" onclick="saveSettings()">Save & Test Connection</button>
+      </div>
+
+      <div class="settings-card">
+        <h3>How to Set Up the Web App</h3>
+        <p>Add this function to your existing Apps Script (setup.gs), then deploy it as a Web App with access set to "Anyone".</p>
+        <div class="code-block" id="apps-script-snippet">// Paste this into your Apps Script (setup.gs)
+// Then: Deploy → New Deployment → Web App
+// Execute as: Me | Who has access: Anyone
+
+var SHEET_ID = '10W2M1jdps1v23lIGfpmHvTf-4I1NNddOY3VUxcCWRO4';
+var DRIVE_FOLDER = 'Trading Charts';
+
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.openById(SHEET_ID);
+
+    if (data.type === 'checklist') {
+      var sheet = ss.getSheetByName('1 - Checklist Log');
+      sheet.appendRow([
+        data.timestamp, data.date, data.session,
+        data.account, data.physicalScore, data.mentalScore,
+        data.stateGate, data.calendarChecked, data.priorDayLevels,
+        data.asiaLevels, data.londonSweep, data.fvgsMarked,
+        data.htfBiasConfirmed, data.targetsFound, data.esChartOpen,
+        data.esDirection, data.smtChecked, data.biasDirection,
+        data.biasReason, data.friendsNearby,
+        data.checklistPass, data.notes
+      ]);
+    }
+
+    if (data.type === 'trade') {
+      var photoUrl = '';
+      if (data.photoBase64) {
+        try {
+          var folder = getOrCreateFolder(DRIVE_FOLDER);
+          var blob = Utilities.newBlob(
+            Utilities.base64Decode(data.photoBase64.split(',')[1]),
+            'image/jpeg',
+            'chart_' + data.date + '_' + Date.now() + '.jpg'
+          );
+          var file = folder.createFile(blob);
+          file.setSharing(DriveApp.Access.ANYONE_WITH_LINK,
+                          DriveApp.Permission.VIEW);
+          photoUrl = file.getUrl();
+        } catch(imgErr) { photoUrl = 'Upload failed'; }
+      }
+
+      var tradeSheet = ss.getSheetByName('2 - Trade Log');
+      var lastRow = tradeSheet.getLastRow();
+      var tradeNum = lastRow > 1 ? lastRow - 1 : 1;
+
+      tradeSheet.appendRow([
+        data.timestamp, tradeNum, data.date, data.session,
+        data.instrument, data.direction, data.grade,
+        data.sweep, data.fvg, data.ifvg, data.smt, data.displacement,
+        data.esCorrelation, data.rrPlanned, data.rrActual,
+        data.outcome, data.pnl, data.emotionScore, data.execScore,
+        data.wouldTakeAgain, data.goodBadLoss,
+        data.doneWell, data.wouldChange,
+        photoUrl, '', ''
+      ]);
+    }
+
+    if (data.type === 'dashboard') {
+      return buildDashboardResponse(ss);
+    }
+
+    return ContentService
+      .createTextOutput(JSON.stringify({success: true}))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({success:false, error:err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  return buildDashboardResponse(ss);
+}
+
+function buildDashboardResponse(ss) {
+  var ts = ss.getSheetByName('2 - Trade Log');
+  var rows = ts.getDataRange().getValues();
+  var trades = [];
+  for (var i = 2; i < rows.length; i++) {
+    if (!rows[i][2]) continue;
+    trades.push({
+      date: rows[i][2], grade: rows[i][6],
+      outcome: rows[i][15], pnl: rows[i][16],
+      esCorr: rows[i][12], friendsNearby: rows[i][19]
+    });
+  }
+  var cs = ss.getSheetByName('1 - Checklist Log');
+  var clRows = cs.getDataRange().getValues();
+  var lowState = 0;
+  for (var j = 1; j < clRows.length; j++) {
+    var phys = parseFloat(clRows[j][4]);
+    var ment = parseFloat(clRows[j][5]);
+    if (phys < 7 || ment < 7) lowState++;
+  }
+  return ContentService
+    .createTextOutput(JSON.stringify({trades: trades, lowStateSessions: lowState}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getOrCreateFolder(name) {
+  var iter = DriveApp.getFoldersByName(name);
+  if (iter.hasNext()) return iter.next();
+  return DriveApp.createFolder(name);
+}</div>
+      </div>
+
+      <div class="settings-card">
+        <h3>Deployment Steps</h3>
+        <p>1. Open your Google Sheet → Extensions → Apps Script<br>
+        2. Paste the code above into setup.gs (append at the bottom)<br>
+        3. Click Deploy → New deployment<br>
+        4. Type: Web App | Execute as: Me | Access: Anyone<br>
+        5. Copy the Web App URL → paste it above → Save</p>
+      </div>
+
+      <div class="settings-card" style="margin-bottom:30px;">
+        <h3>Spreadsheet ID</h3>
+        <p>Pre-configured. Do not change.</p>
+        <input type="text" value="10W2M1jdps1v23lIGfpmHvTf-4I1NNddOY3VUxcCWRO4" readonly style="color:var(--muted); font-size:12px;">
+      </div>
+    </div><!-- /settings -->
+
+  </div><!-- /main -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom">
+    <button class="active" onclick="switchTab('checklist', this)" id="nav-checklist">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12l2 2 4-4"/></svg>
+      Checklist
+    </button>
+    <button onclick="switchTab('trade', this)" id="nav-trade">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Trade
+    </button>
+    <button onclick="switchTab('dashboard', this)" id="nav-dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+    <button onclick="switchTab('settings', this)" id="nav-settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      Settings
+    </button>
+  </nav>
+
+</div><!-- /app -->
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ── STATE ──────────────────────────────────────────────────────
+var STATE = {
+  webAppUrl: localStorage.getItem('smc_webapp_url') || '',
+  photoData: null,
+  chart: null
+};
+
+// ── INIT ───────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  setTodayDate('cl-date');
+  setTodayDate('tr-date');
+  initBtnGroups();
+  initScoreRows();
+  initConceptBtns();
+  initPhotoUpload();
+  loadSettings();
+  updateConnStatus();
+  updateHeader();
+});
+
+function setTodayDate(id) {
+  var d = new Date();
+  var s = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+  document.getElementById(id).value = s;
+}
+function pad(n) { return n < 10 ? '0'+n : ''+n; }
+
+// ── NAVIGATION ─────────────────────────────────────────────────
+function switchTab(tab, btn) {
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('nav.bottom button').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('panel-'+tab).classList.add('active');
+  btn.classList.add('active');
+  if (tab === 'dashboard') loadDashboard();
+  updateHeader(tab);
+}
+
+function updateHeader(tab) {
+  var subs = { checklist:'Pre-Session Checklist', trade:'Trade Entry', dashboard:'Performance', settings:'Settings' };
+  document.getElementById('header-sub').textContent = subs[tab] || 'NQ/MNQ Futures';
+}
+
+// ── BUTTON GROUP LOGIC ─────────────────────────────────────────
+function initBtnGroups() {
+  document.querySelectorAll('.btn-group').forEach(function(group) {
+    group.querySelectorAll('button').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        group.querySelectorAll('button').forEach(function(b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        // Grade warning
+        if (group.id === 'tr-grade') {
+          var bad = ['B','B-','C'];
+          var warn = document.getElementById('grade-warning');
+          warn.style.display = bad.indexOf(btn.dataset.v) > -1 ? 'block' : 'none';
+        }
+      });
+    });
+  });
+  // yn-rows
+  document.querySelectorAll('.yn-row').forEach(function(row) {
+    row.querySelectorAll('button').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        row.querySelectorAll('button').forEach(function(b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+      });
+    });
+  });
+}
+
+function initScoreRows() {
+  document.querySelectorAll('.score-row').forEach(function(row) {
+    row.querySelectorAll('button').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        row.querySelectorAll('button').forEach(function(b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        if (row.id === 'cl-physical' || row.id === 'cl-mental') updateStateGate();
+      });
+    });
+  });
+}
+
+function initConceptBtns() {
+  document.querySelectorAll('#tr-concepts .concept-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { btn.classList.toggle('selected'); });
+  });
+}
+
+// ── STATE GATE ─────────────────────────────────────────────────
+function updateStateGate() {
+  var phys = parseInt(getSelected('cl-physical') || '0');
+  var ment = parseInt(getSelected('cl-mental') || '0');
+  var gate = document.getElementById('state-gate');
+  if (!phys || !ment) {
+    gate.className = '';
+    gate.textContent = '— STATE GATE —';
+    return;
+  }
+  if (phys >= 7 && ment >= 7) {
+    gate.className = 'pass';
+    gate.textContent = '✓ STATE GATE — PASS';
+  } else {
+    gate.className = 'fail';
+    gate.textContent = '✗ STATE GATE — FAIL  (Do not trade)';
+  }
+}
+
+// ── PHOTO UPLOAD ───────────────────────────────────────────────
+function initPhotoUpload() {
+  var input = document.getElementById('photo-input');
+  input.addEventListener('change', function() {
+    if (!input.files.length) return;
+    var file = input.files[0];
+    document.getElementById('photo-filename').textContent = file.name;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      STATE.photoData = e.target.result;
+      var prev = document.getElementById('photo-preview');
+      prev.src = e.target.result;
+      prev.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+  var area = document.getElementById('photo-upload-area');
+  area.addEventListener('dragover', function(e) { e.preventDefault(); area.classList.add('dragover'); });
+  area.addEventListener('dragleave', function() { area.classList.remove('dragover'); });
+  area.addEventListener('drop', function(e) {
+    e.preventDefault(); area.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      input.files = e.dataTransfer.files;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+}
+
+// ── HELPERS ────────────────────────────────────────────────────
+function getSelected(groupId) {
+  var sel = document.querySelector('#' + groupId + ' button.selected');
+  return sel ? sel.dataset.v : '';
+}
+function getYN(rowId) {
+  var sel = document.querySelector('#' + rowId + ' button.selected');
+  return sel ? sel.dataset.v : '';
+}
+function getConcept(v) {
+  return document.querySelector('#tr-concepts .concept-btn[data-v="'+v+'"].selected') ? 'Yes' : 'No';
+}
+function now() { return new Date().toISOString(); }
+
+function toast(msg, type) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + (type || '');
+  setTimeout(function() { el.className = ''; }, 3000);
+}
+
+// ── SUBMIT CHECKLIST ───────────────────────────────────────────
+function submitChecklist() {
+  var url = STATE.webAppUrl;
+  if (!url) { switchTab('settings', document.getElementById('nav-settings')); toast('Configure Web App URL in Settings first', 'error'); return; }
+
+  var phys = parseInt(getSelected('cl-physical') || '0');
+  var ment = parseInt(getSelected('cl-mental') || '0');
+  var stateGate = (phys >= 7 && ment >= 7) ? 'PASS' : 'FAIL';
+  var checklistPass = (stateGate === 'PASS' && getYN('cl-calendar') === 'Yes' && getYN('cl-htf') === 'Yes' && getYN('cl-targets') === 'Yes') ? 'PASS' : 'FAIL';
+
+  var data = {
+    type: 'checklist', timestamp: now(),
+    date: document.getElementById('cl-date').value,
+    session: getSelected('cl-session'),
+    account: getSelected('cl-account'),
+    physicalScore: phys, mentalScore: ment,
+    stateGate: stateGate,
+    calendarChecked: getYN('cl-calendar'),
+    priorDayLevels: getYN('cl-priorday'),
+    asiaLevels: getYN('cl-asia'),
+    londonSweep: getYN('cl-london'),
+    fvgsMarked: getYN('cl-fvgs'),
+    htfBiasConfirmed: getYN('cl-htf'),
+    targetsFound: getYN('cl-targets'),
+    esChartOpen: getYN('cl-esopen'),
+    esDirection: getSelected('cl-esdirection'),
+    smtChecked: getSelected('cl-smt'),
+    biasDirection: getSelected('cl-bias'),
+    biasReason: document.getElementById('cl-biasreason').value,
+    friendsNearby: getYN('cl-friends'),
+    checklistPass: checklistPass,
+    notes: document.getElementById('cl-notes').value
+  };
+
+  var btn = document.getElementById('cl-submit');
+  btn.textContent = 'Submitting...'; btn.disabled = true;
+
+  apiPost(data, function(ok, err) {
+    btn.textContent = 'Submit Checklist'; btn.disabled = false;
+    if (ok) {
+      toast('Checklist saved ✓', 'success');
+      // Cache locally
+      var cache = JSON.parse(localStorage.getItem('smc_checklists') || '[]');
+      cache.push(data); localStorage.setItem('smc_checklists', JSON.stringify(cache));
+    } else {
+      toast('Error: ' + (err || 'Check connection'), 'error');
+    }
+  });
+}
+
+// ── SUBMIT TRADE ───────────────────────────────────────────────
+function submitTrade() {
+  var url = STATE.webAppUrl;
+  if (!url) { switchTab('settings', document.getElementById('nav-settings')); toast('Configure Web App URL in Settings first', 'error'); return; }
+
+  var outcome = getSelected('tr-outcome');
+  var goodBadLoss = '';
+  var wta = getSelected('tr-wta');
+  if (outcome === 'LOSS' || outcome === 'LOSS PARTIAL') {
+    goodBadLoss = wta === 'Yes - good loss' ? 'Good Loss' : wta === 'No - bad loss' ? 'Bad Loss' : '';
+  }
+
+  var data = {
+    type: 'trade', timestamp: now(),
+    date: document.getElementById('tr-date').value,
+    session: getSelected('tr-session'),
+    instrument: getSelected('tr-instrument'),
+    direction: getSelected('tr-direction'),
+    grade: getSelected('tr-grade'),
+    sweep: getConcept('sweep'),
+    fvg: getConcept('fvg'),
+    ifvg: getConcept('ifvg'),
+    smt: getConcept('smt'),
+    displacement: getConcept('displacement'),
+    esCorrelation: getSelected('tr-escorr'),
+    rrPlanned: document.getElementById('tr-rrplan').value || '0',
+    rrActual: document.getElementById('tr-rract').value || '0',
+    outcome: outcome,
+    pnl: document.getElementById('tr-pnl').value || '0',
+    emotionScore: getSelected('tr-emotion'),
+    execScore: getSelected('tr-exec'),
+    wouldTakeAgain: wta,
+    goodBadLoss: goodBadLoss,
+    doneWell: document.getElementById('tr-well').value,
+    wouldChange: document.getElementById('tr-change').value,
+    photoBase64: STATE.photoData || ''
+  };
+
+  var btn = document.getElementById('tr-submit');
+  btn.textContent = 'Saving trade...'; btn.disabled = true;
+
+  apiPost(data, function(ok, err) {
+    btn.textContent = 'Log Trade'; btn.disabled = false;
+    if (ok) {
+      toast('Trade logged ✓', 'success');
+      // Cache locally
+      var cache = JSON.parse(localStorage.getItem('smc_trades') || '[]');
+      cache.push(data); localStorage.setItem('smc_trades', JSON.stringify(cache));
+      // Reset photo
+      STATE.photoData = null;
+      document.getElementById('photo-preview').style.display = 'none';
+      document.getElementById('photo-filename').textContent = 'No photo selected';
+    } else {
+      toast('Error: ' + (err || 'Check connection'), 'error');
+    }
+  });
+}
+
+// ── API ───────────────────────────────────────────────────────
+function apiPost(data, cb) {
+  fetch(STATE.webAppUrl, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify(data)
+  })
+  .then(function() { cb(true, null); })
+  .catch(function(e) { cb(false, e.message); });
+}
+
+function apiGet(cb) {
+  fetch(STATE.webAppUrl)
+  .then(function(r) { return r.json(); })
+  .then(function(j) { cb(true, j); })
+  .catch(function(e) { cb(false, null); });
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────
+function loadDashboard() {
+  if (!STATE.webAppUrl) {
+    toast('Configure Web App URL in Settings', 'error');
+    loadDashboardFromCache();
+    return;
+  }
+  toast('Loading...', '');
+  apiGet(function(ok, data) {
+    if (ok && data && data.trades) {
+      renderDashboard(data.trades, data.lowStateSessions);
+    } else {
+      loadDashboardFromCache();
+    }
+  });
+}
+
+function loadDashboardFromCache() {
+  var trades = JSON.parse(localStorage.getItem('smc_trades') || '[]');
+  renderDashboard(trades, 0);
+}
+
+function renderDashboard(trades, lowStateSessions) {
+  if (!trades.length) {
+    document.getElementById('d-wr').textContent = '—';
+    document.getElementById('d-trades').textContent = '0';
+    document.getElementById('d-pnl').textContent = '—';
+    document.getElementById('d-violations').textContent = '0';
+    return;
+  }
+
+  // Overall stats
+  var wins = trades.filter(function(t) { return t.outcome === 'WIN' || t.outcome === 'WIN PARTIAL'; }).length;
+  var losses = trades.filter(function(t) { return t.outcome === 'LOSS' || t.outcome === 'LOSS PARTIAL'; }).length;
+  var total = wins + losses;
+  var wr = total > 0 ? Math.round(wins/total*100) : 0;
+  var pnl = trades.reduce(function(acc, t) { return acc + (parseFloat(t.pnl) || 0); }, 0);
+
+  document.getElementById('d-wr').textContent = wr + '%';
+  document.getElementById('d-trades').textContent = trades.length;
+  var pnlEl = document.getElementById('d-pnl');
+  pnlEl.textContent = (pnl >= 0 ? '+' : '') + '£' + Math.round(pnl);
+  var pnlCard = document.getElementById('d-pnl-card');
+  pnlCard.className = 'stat-card ' + (pnl >= 0 ? 'green' : 'red');
+
+  // Violations
+  var gambles = trades.filter(function(t) { return t.outcome === 'GAMBLE'; }).length;
+  var badGrades = trades.filter(function(t) { return ['B','B-','C'].indexOf(t.grade) > -1; }).length;
+  var esBad = trades.filter(function(t) { return t.esCorr === 'Chopping' || t.esCorr === 'Uncorrelated'; }).length;
+  var friends = trades.filter(function(t) { return t.friendsNearby === 'Yes'; }).length;
+  var totalViol = gambles + badGrades + esBad + (lowStateSessions || 0) + friends;
+
+  document.getElementById('d-violations').textContent = totalViol;
+  document.getElementById('dv-gamble').textContent = gambles;
+  document.getElementById('dv-grade').textContent = badGrades;
+  document.getElementById('dv-state').textContent = lowStateSessions || '—';
+  document.getElementById('dv-friends').textContent = friends;
+  document.getElementById('dv-es').textContent = esBad;
+
+  // Grade breakdown
+  var grades = ['A+','A','A-','B+','B','B-','C'];
+  var gradeColors = {'A+':'#00d483','A':'#22c55e','A-':'#84cc16','B+':'#f59e0b','B':'#ef4444','B-':'#dc2626','C':'#991b1b'};
+  var gradeEl = document.getElementById('d-grades');
+  gradeEl.innerHTML = '';
+  grades.forEach(function(g) {
+    var gt = trades.filter(function(t) { return t.grade === g; });
+    if (!gt.length) return;
+    var gw = gt.filter(function(t) { return t.outcome === 'WIN' || t.outcome === 'WIN PARTIAL'; }).length;
+    var gl = gt.filter(function(t) { return t.outcome === 'LOSS' || t.outcome === 'LOSS PARTIAL'; }).length;
+    var gwr = (gw+gl) > 0 ? Math.round(gw/(gw+gl)*100) : 0;
+    var chip = document.createElement('div');
+    chip.className = 'grade-chip';
+    chip.innerHTML = '<div class="chip-grade" style="color:'+gradeColors[g]+'">'+g+'</div><div class="chip-wr">'+gwr+'%</div><div class="chip-n">n='+gt.length+'</div>';
+    gradeEl.appendChild(chip);
+  });
+
+  // Equity curve
+  var running = 0;
+  var curve = trades.map(function(t) { running += (parseFloat(t.pnl) || 0); return running; });
+  renderEquityCurve(curve);
+}
+
+function renderEquityCurve(data) {
+  var canvas = document.getElementById('equity-canvas');
+  if (STATE.chart) { STATE.chart.destroy(); }
+  var positive = data[data.length-1] >= 0;
+  STATE.chart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: data.map(function(_,i) { return i+1; }),
+      datasets: [{
+        data: data,
+        borderColor: positive ? '#00d483' : '#ff4455',
+        borderWidth: 2,
+        fill: true,
+        backgroundColor: positive ? 'rgba(0,212,131,.08)' : 'rgba(255,68,85,.08)',
+        tension: 0.3,
+        pointRadius: 0,
+        pointHoverRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { display: false },
+        y: {
+          grid: { color: '#2a333e' },
+          ticks: { color: '#7a8898', font: { size: 10 }, callback: function(v) { return '£'+v; } }
+        }
+      }
+    }
+  });
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────
+function loadSettings() {
+  document.getElementById('s-webapp-url').value = STATE.webAppUrl || '';
+}
+
+function saveSettings() {
+  var url = document.getElementById('s-webapp-url').value.trim();
+  STATE.webAppUrl = url;
+  localStorage.setItem('smc_webapp_url', url);
+  if (!url) { toast('URL cleared', ''); updateConnStatus(); return; }
+  // Test connection
+  toast('Testing connection...', '');
+  fetch(url)
+    .then(function(r) {
+      toast('Connected ✓', 'success'); updateConnStatus(true);
+    })
+    .catch(function() { toast('Cannot reach URL — check deployment', 'error'); updateConnStatus(false); });
+}
+
+function updateConnStatus(connected) {
+  var dot = document.getElementById('conn-dot');
+  var txt = document.getElementById('conn-text');
+  if (connected === undefined) connected = !!STATE.webAppUrl;
+  dot.className = 'status-dot ' + (connected ? 'connected' : 'disconnected');
+  txt.textContent = connected ? 'Connected' : (STATE.webAppUrl ? 'Not verified' : 'Not configured');
+}
+</script>
+</body>
+</html>
