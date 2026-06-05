@@ -1110,14 +1110,16 @@ function apiPost(data, cb) {
 
   var form = document.createElement('form');
   form.method = 'POST';
-  form.action = STATE.webAppUrl;
+  // Put payload in URL query string — survives the POST→GET redirect that Google does
+  form.action = STATE.webAppUrl + '?payload=' + encodeURIComponent(JSON.stringify(payload));
   form.target = uid;
   form.style.display = 'none';
 
+  // Dummy input so form submits (some browsers skip empty forms)
   var input = document.createElement('input');
   input.type = 'hidden';
-  input.name = 'payload';
-  input.value = JSON.stringify(payload);
+  input.name = '_t';
+  input.value = Date.now();
   form.appendChild(input);
   document.body.appendChild(form);
   form.submit();
