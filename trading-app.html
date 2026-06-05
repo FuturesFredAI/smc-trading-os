@@ -1096,15 +1096,26 @@ function submitTrade() {
 
 // ── API ───────────────────────────────────────────────────────
 function apiPost(data, cb) {
-  // Use text/plain Content-Type — avoids CORS preflight, works on all browsers/mobile
-  // Apps Script receives the body via e.postData.contents regardless of content-type
-  fetch(STATE.webAppUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify(data)
-  })
-  .then(function(r) { cb(true, null); })
-  .catch(function(e) { cb(false, e.message); });
+  // GET with URL params — avoids all CORS/redirect issues on mobile Safari
+  // Photo (large base64) sent separately via fire-and-forget no-cors POST
+  var photoData = data.photoBase64 || '';
+  var payload = JSON.parse(JSON.stringify(data));
+  delete payload.photoBase64;
+
+  var url = STATE.webAppUrl + '?payload=' + encodeURIComponent(JSON.stringify(payload));
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(j) {
+      if (photoData) {
+        // Fire and forget — Apps Script will update last trade row with photo URL
+        fetch(STATE.webAppUrl, {
+          method: 'POST', mode: 'no-cors',
+          body: JSON.stringify({type:'photo', date: data.date, photoBase64: photoData})
+        });
+      }
+      cb(true, null);
+    })
+    .catch(function(e) { cb(false, e.message); });
 }
 
 function apiGet(cb) {
