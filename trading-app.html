@@ -1096,12 +1096,14 @@ function submitTrade() {
 
 // ── API ───────────────────────────────────────────────────────
 function apiPost(data, cb) {
+  // Use text/plain Content-Type — avoids CORS preflight, works on all browsers/mobile
+  // Apps Script receives the body via e.postData.contents regardless of content-type
   fetch(STATE.webAppUrl, {
     method: 'POST',
-    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify(data)
   })
-  .then(function() { cb(true, null); })
+  .then(function(r) { cb(true, null); })
   .catch(function(e) { cb(false, e.message); });
 }
 
