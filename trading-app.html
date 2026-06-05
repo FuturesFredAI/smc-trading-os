@@ -136,9 +136,7 @@ nav.bottom button svg { width: 20px; height: 20px; }
 .grade-chip .chip-grade { font-size: 14px; font-weight: 800; margin-bottom: 2px; }
 .grade-chip .chip-wr { font-size: 12px; color: var(--muted); }
 .grade-chip .chip-n { font-size: 10px; color: var(--muted); margin-top: 2px; }
-#equity-chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
-#equity-chart-wrap h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 12px; }
-#equity-canvas { width: 100%; height: 120px; }
+.stat-card .stat-sub { font-size: 10px; color: var(--muted); margin-top: 5px; line-height: 1.5; }
 .violation-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; }
 .violation-list .v-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 14px; border-bottom: 1px solid var(--border); }
 .violation-list .v-row:last-child { border-bottom: none; }
@@ -188,9 +186,11 @@ nav.bottom button svg { width: 20px; height: 20px; }
       <div class="field">
         <label>Session</label>
         <div class="btn-group" id="cl-session">
-          <button data-v="NY Open">NY Open</button>
+          <button data-v="Asia">Asia</button>
           <button data-v="London Open">London</button>
+          <button data-v="NY Open">NY Open</button>
           <button data-v="NY PM">NY PM</button>
+          <button data-v="Out of Session">OOS</button>
         </div>
       </div>
       <div class="field">
@@ -315,9 +315,11 @@ nav.bottom button svg { width: 20px; height: 20px; }
       <div class="field">
         <label>Session</label>
         <div class="btn-group" id="tr-session">
-          <button data-v="NY Open">NY Open</button>
+          <button data-v="Asia">Asia</button>
           <button data-v="London Open">London</button>
+          <button data-v="NY Open">NY Open</button>
           <button data-v="NY PM">NY PM</button>
+          <button data-v="Out of Session">OOS</button>
         </div>
       </div>
       <div class="field">
@@ -515,6 +517,22 @@ nav.bottom button svg { width: 20px; height: 20px; }
         <div class="stat-card"><div class="stat-val" id="d-trades">—</div><div class="stat-label">Total Trades</div></div>
       </div>
       <div class="stat-row">
+        <div class="stat-card green" id="d-wins-card">
+          <div class="stat-val" id="d-wins">—</div>
+          <div class="stat-label">Wins</div>
+          <div class="stat-sub" id="d-wins-sub"></div>
+        </div>
+        <div class="stat-card red" id="d-losses-card">
+          <div class="stat-val" id="d-losses">—</div>
+          <div class="stat-label">Losses</div>
+          <div class="stat-sub" id="d-losses-sub"></div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-val" id="d-be">—</div><div class="stat-label">Break Even</div></div>
+        <div class="stat-card"><div class="stat-val" id="d-rr">—</div><div class="stat-label">Avg RR</div></div>
+      </div>
+      <div class="stat-row">
         <div class="stat-card" id="d-pnl-card"><div class="stat-val" id="d-pnl">—</div><div class="stat-label">Total P&L</div></div>
         <div class="stat-card amber"><div class="stat-val" id="d-violations">—</div><div class="stat-label">Violations</div></div>
       </div>
@@ -522,11 +540,6 @@ nav.bottom button svg { width: 20px; height: 20px; }
       <div class="section-title">Win Rate by Grade</div>
       <div class="grade-row" id="d-grades">
         <div class="empty-state" style="padding:16px;width:100%">Load data to see grade breakdown</div>
-      </div>
-
-      <div id="equity-chart-wrap">
-        <h3>Equity Curve</h3>
-        <canvas id="equity-canvas"></canvas>
       </div>
 
       <div class="section-title">Rule Violations</div>
@@ -1123,22 +1136,37 @@ function loadDashboardFromCache() {
 
 function renderDashboard(trades, lowStateSessions) {
   if (!trades.length) {
-    document.getElementById('d-wr').textContent = '—';
-    document.getElementById('d-trades').textContent = '0';
-    document.getElementById('d-pnl').textContent = '—';
-    document.getElementById('d-violations').textContent = '0';
+    ['d-wr','d-trades','d-pnl','d-violations','d-wins','d-losses','d-be','d-rr'].forEach(function(id){
+      document.getElementById(id).textContent = id === 'd-trades' ? '0' : '—';
+    });
     return;
   }
 
   // Overall stats
-  var wins = trades.filter(function(t) { return t.outcome === 'WIN' || t.outcome === 'WIN PARTIAL'; }).length;
-  var losses = trades.filter(function(t) { return t.outcome === 'LOSS' || t.outcome === 'LOSS PARTIAL'; }).length;
+  var winsOnly    = trades.filter(function(t) { return t.outcome === 'WIN'; }).length;
+  var winPartial  = trades.filter(function(t) { return t.outcome === 'WIN PARTIAL'; }).length;
+  var lossOnly    = trades.filter(function(t) { return t.outcome === 'LOSS'; }).length;
+  var lossPartial = trades.filter(function(t) { return t.outcome === 'LOSS PARTIAL'; }).length;
+  var bes         = trades.filter(function(t) { return t.outcome === 'BREAK EVEN'; }).length;
+  var wins  = winsOnly + winPartial;
+  var losses = lossOnly + lossPartial;
   var total = wins + losses;
   var wr = total > 0 ? Math.round(wins/total*100) : 0;
   var pnl = trades.reduce(function(acc, t) { return acc + (parseFloat(t.pnl) || 0); }, 0);
 
+  // Avg RR (actual, exclude 0s)
+  var rrVals = trades.map(function(t){ return parseFloat(t.rrActual)||0; }).filter(function(v){ return v > 0; });
+  var avgRR = rrVals.length ? (rrVals.reduce(function(a,b){return a+b;},0)/rrVals.length).toFixed(2) : '—';
+
   document.getElementById('d-wr').textContent = wr + '%';
   document.getElementById('d-trades').textContent = trades.length;
+  document.getElementById('d-wins').textContent = wins;
+  document.getElementById('d-wins-sub').innerHTML = winPartial > 0 ? 'partial: ' + winPartial : '';
+  document.getElementById('d-losses').textContent = losses;
+  document.getElementById('d-losses-sub').innerHTML = lossPartial > 0 ? 'partial: ' + lossPartial : '';
+  document.getElementById('d-be').textContent = bes;
+  document.getElementById('d-rr').textContent = avgRR;
+
   var pnlEl = document.getElementById('d-pnl');
   pnlEl.textContent = (pnl >= 0 ? '+' : '') + '£' + Math.round(pnl);
   var pnlCard = document.getElementById('d-pnl-card');
@@ -1175,43 +1203,6 @@ function renderDashboard(trades, lowStateSessions) {
     gradeEl.appendChild(chip);
   });
 
-  // Equity curve
-  var running = 0;
-  var curve = trades.map(function(t) { running += (parseFloat(t.pnl) || 0); return running; });
-  renderEquityCurve(curve);
-}
-
-function renderEquityCurve(data) {
-  var canvas = document.getElementById('equity-canvas');
-  if (STATE.chart) { STATE.chart.destroy(); }
-  var positive = data[data.length-1] >= 0;
-  STATE.chart = new Chart(canvas, {
-    type: 'line',
-    data: {
-      labels: data.map(function(_,i) { return i+1; }),
-      datasets: [{
-        data: data,
-        borderColor: positive ? '#00d483' : '#ff4455',
-        borderWidth: 2,
-        fill: true,
-        backgroundColor: positive ? 'rgba(0,212,131,.08)' : 'rgba(255,68,85,.08)',
-        tension: 0.3,
-        pointRadius: 0,
-        pointHoverRadius: 4
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { display: false },
-        y: {
-          grid: { color: '#2a333e' },
-          ticks: { color: '#7a8898', font: { size: 10 }, callback: function(v) { return '£'+v; } }
-        }
-      }
-    }
-  });
 }
 
 // ── SETTINGS ──────────────────────────────────────────────────
