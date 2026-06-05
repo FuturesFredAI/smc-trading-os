@@ -1215,10 +1215,10 @@ function saveSettings() {
   STATE.webAppUrl = url;
   localStorage.setItem('smc_webapp_url', url);
   if (!url) { toast('URL cleared', ''); updateConnStatus(); return; }
-  // Test connection
+  // Test connection — use no-cors so CORS headers don't block the check
   toast('Testing connection...', '');
-  fetch(url)
-    .then(function(r) {
+  fetch(url, { mode: 'no-cors' })
+    .then(function() {
       toast('Connected ✓', 'success'); updateConnStatus(true);
     })
     .catch(function() { toast('Cannot reach URL — check deployment', 'error'); updateConnStatus(false); });
