@@ -1096,48 +1096,22 @@ function submitTrade() {
 
 // ── API ───────────────────────────────────────────────────────
 function apiPost(data, cb) {
-  // Hidden iframe form submission — bypasses ALL CORS on every browser/iOS version
-  // No fetch, no redirects, no CORS headers needed. Always works.
   var payload = JSON.parse(JSON.stringify(data));
   var photoData = payload.photoBase64 || '';
   delete payload.photoBase64;
 
-  var uid = 'f' + Date.now();
-  var iframe = document.createElement('iframe');
-  iframe.name = uid;
-  iframe.style.cssText = 'position:absolute;width:1px;height:1px;left:-9999px;top:-9999px;border:0;';
-  document.body.appendChild(iframe);
+  var url = STATE.webAppUrl + '?payload=' + encodeURIComponent(JSON.stringify(payload));
 
-  var form = document.createElement('form');
-  form.method = 'POST';
-  // Put payload in URL query string — survives the POST→GET redirect that Google does
-  form.action = STATE.webAppUrl + '?payload=' + encodeURIComponent(JSON.stringify(payload));
-  form.target = uid;
-  form.style.display = 'none';
-
-  // Dummy input so form submits (some browsers skip empty forms)
-  var input = document.createElement('input');
-  input.type = 'hidden';
-  input.name = '_t';
-  input.value = Date.now();
-  form.appendChild(input);
-  document.body.appendChild(form);
-  form.submit();
-
-  // Photo: fire-and-forget via no-cors if present
-  if (photoData) {
-    fetch(STATE.webAppUrl, {
-      method: 'POST', mode: 'no-cors',
-      body: JSON.stringify({type:'photo', date: data.date, photoBase64: photoData})
-    });
-  }
-
-  // Clean up + report success after 2s (form submitted, we can't read response)
-  setTimeout(function() {
-    try { document.body.removeChild(form); } catch(e2) {}
-    try { document.body.removeChild(iframe); } catch(e2) {}
-    cb(true, null);
-  }, 2000);
+  // no-cors GET: simple request, no preflight, no CORS rejection, no redirect body-drop
+  fetch(url, { mode: 'no-cors' })
+    .then(function() {
+      if (photoData) {
+        fetch(STATE.webAppUrl, { method: 'POST', mode: 'no-cors',
+          body: JSON.stringify({type:'photo', date: data.date, photoBase64: photoData}) });
+      }
+      cb(true, null);
+    })
+    .catch(function(e) { cb(false, e.message); });
 }
 
 function apiGet(cb) {
