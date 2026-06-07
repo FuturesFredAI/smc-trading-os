@@ -1743,8 +1743,15 @@ function buildJCard(t) {
   var gc = GC[t.grade]||'var(--muted)'; var gb = GB[t.grade]||'var(--surface2)';
   var card = document.createElement('div'); card.className = 'jcard';
   var hasPhoto = t.photoBase64 && t.photoBase64.indexOf('data:') === 0;
-  var photoHtml = hasPhoto
-    ? '<img class="jcard-photo" src="'+t.photoBase64+'" alt="Chart">'
+  // Convert Drive file URL to embeddable URL (for API-loaded trades)
+  var driveEmbed = '';
+  if (!hasPhoto && t.photoUrl && t.photoUrl.indexOf('drive.google.com') > -1) {
+    var match = t.photoUrl.match(/[-\w]{25,}/);
+    if (match) driveEmbed = 'https://drive.google.com/uc?id='+match[0];
+  }
+  var photoSrc = hasPhoto ? t.photoBase64 : driveEmbed;
+  var photoHtml = photoSrc
+    ? '<img class="jcard-photo" src="'+photoSrc+'" alt="Chart">'
     : '<div class="jcard-photo-placeholder">📷 No chart photo — attach one next time</div>';
 
   var detailRows = '';
