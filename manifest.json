@@ -1,0 +1,26 @@
+{
+  "name": "SMC Trading OS",
+  "short_name": "Trading OS",
+  "description": "Freddie Fuller — NQ/MNQ SMC Futures Journal",
+  "start_url": "./trading-app.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='38' fill='%23080c0e'/%3E%3Cpolyline points='20,145 55,105 85,120 125,58 172,82' stroke='%2300d483' stroke-width='11' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='20' cy='145' r='7' fill='%2300d483'/%3E%3Ccircle cx='172' cy='82' r='7' fill='%2300d483'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23080c0e'/%3E%3Cpolyline points='50,385 145,280 225,318 330,155 462,218' stroke='%2300d483' stroke-width='28' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='50' cy='385' r='18' fill='%2300d483'/%3E%3Ccircle cx='462' cy='218' r='18' fill='%2300d483'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "productivity"],
+  "lang": "en-GB"
+}
