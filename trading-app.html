@@ -851,7 +851,7 @@ nav.bottom button svg{width:20px;height:20px;}
 <script>
 // ── STATE ──────────────────────────────────────────────
 var STATE = {
-  webAppUrl: localStorage.getItem('smc_webapp_url') || '',
+  webAppUrl: localStorage.getItem('smc_webapp_url') || 'https://smc-proxy.futures-freddie.workers.dev',
   photoData: null,
   equityChart: null,
   allTrades: []
@@ -1749,7 +1749,7 @@ function buildJCard(t) {
 
   var detailRows = '';
   // Text/select fields — show if non-empty
-  [['Session',t.session],['Instrument',t.instrument],['Direction',t.direction],['ES Corr.',t.esCorrelation],['Target',t.target],['Momentum',t.momentum],['Premium/Discount',t.premiumDiscount]].forEach(function(f){
+  [['Session',t.session],['Instrument',t.instrument],['Direction',t.direction],['ES Corr.',t.esCorrelation||t.esCorr],['Target',t.target],['Momentum',t.momentum],['Premium/Discount',t.premiumDiscount]].forEach(function(f){
     if (f[1] && f[1]!=='' && f[1]!=='undefined') detailRows+='<div class="jd-row"><span class="jd-label">'+f[0]+'</span><span class="jd-val">'+f[1]+'</span></div>';
   });
   // R:R — show unless both zero/empty
