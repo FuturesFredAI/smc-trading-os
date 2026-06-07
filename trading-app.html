@@ -251,21 +251,27 @@ nav.bottom button svg{width:20px;height:20px;}
 .jd-note:last-child{border-bottom:none;padding-bottom:0;}
 .jd-note strong{color:var(--text);font-weight:600;}
 
-/* Calendar view */
-.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-.cal-nav button{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+/* TopStep-style calendar */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.cal-nav button{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:20px;line-height:1;-webkit-tap-highlight-color:transparent;}
 .cal-month-label{font-size:15px;font-weight:800;}
-.cal-grid-head{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;}
-.cal-grid-head span{text-align:center;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.06em;padding:4px 0;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:14px;}
-.cal-day{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:600;color:var(--muted);border:1px solid transparent;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent;transition:all .12s;}
-.cal-day.has-trades{color:var(--text);border-color:var(--border);background:var(--surface);}
-.cal-day.today{border-color:var(--blue)!important;color:var(--blue);}
-.cal-day.selected{background:var(--surface2);border-color:var(--blue)!important;}
-.cal-day.empty{pointer-events:none;}
-.cal-dots{display:flex;gap:2px;justify-content:center;}
-.cal-dot{width:5px;height:5px;border-radius:50%;}
-.cal-day-trades{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr) 56px;gap:2px;margin-bottom:2px;}
+.cal-header span{text-align:center;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.06em;padding:4px 0;text-transform:uppercase;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr) 56px;gap:2px;margin-bottom:14px;}
+.cal-cell{border-radius:6px;min-height:58px;padding:5px 4px 4px;display:flex;flex-direction:column;background:var(--surface);position:relative;-webkit-tap-highlight-color:transparent;transition:opacity .1s;}
+.cal-cell:active{opacity:.8;}
+.cal-cell.cal-empty{background:rgba(255,255,255,.02);pointer-events:none;}
+.cal-cell.cal-today{box-shadow:0 0 0 2px var(--blue);}
+.cal-cell.cal-selected{box-shadow:0 0 0 2px #fff;}
+.cal-cell.cal-has{cursor:pointer;}
+.cal-d{font-size:10px;font-weight:600;color:var(--muted2);line-height:1;}
+.cal-cell.cal-has .cal-d{color:rgba(255,255,255,.5);}
+.cal-pnl{font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;text-align:center;flex:1;display:flex;align-items:center;justify-content:center;line-height:1.1;}
+.cal-cnt{font-size:9px;text-align:center;color:rgba(255,255,255,.45);line-height:1;}
+.cal-week-cell{border-radius:6px;min-height:58px;padding:4px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
+.cal-wk-label{font-size:8px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;}
+.cal-wk-pnl{font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;}
+.cal-day-trades{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-top:2px;}
 .cal-day-trades-head{padding:10px 14px;font-size:12px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border);}
 
 /* Grade sections */
@@ -1554,6 +1560,12 @@ function setJournalView(view, btn) {
 }
 
 function renderJournal() {
+  // Auto-load API trades if not yet loaded (so Journal works without visiting Stats first)
+  if (!STATE.allTrades.length && STATE.webAppUrl) {
+    apiGet(function(ok, data) {
+      if (ok && data && data.trades) { STATE.allTrades = data.trades; renderJournal(); }
+    });
+  }
   var trades = getJournalTrades();
   if (JOURNAL.view === 'month') renderJournalMonth(trades);
   else if (JOURNAL.view === 'grade') renderJournalGrade(trades);
@@ -1609,55 +1621,103 @@ function renderJournalGrade(trades) {
   });
 }
 
+function getDayCellBg(pnl) {
+  if (!pnl) return 'var(--surface)';
+  if (pnl > 0) { var i = Math.min(pnl/800,1); return 'rgba(0,180,100,'+(0.18+i*0.45)+')'; }
+  var i2 = Math.min(Math.abs(pnl)/400,1); return 'rgba(200,40,55,'+(0.22+i2*0.45)+')';
+}
+
 function renderJournalCalendar(trades) {
   var el = document.getElementById('journal-calendar'); el.innerHTML = '';
   var year = JOURNAL.calYear, month = JOURNAL.calMonth;
   var mNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  var byDate = {};
-  trades.forEach(function(t){ if (!t.date) return; if (!byDate[t.date]) byDate[t.date]=[]; byDate[t.date].push(t); });
 
+  // Build daily summary
+  var byDate = {};
+  trades.forEach(function(t){
+    if (!t.date) return;
+    if (!byDate[t.date]) byDate[t.date]={list:[],pnl:0,count:0};
+    byDate[t.date].list.push(t);
+    byDate[t.date].pnl += parseFloat(t.pnl)||0;
+    byDate[t.date].count++;
+  });
+
+  var today = new Date();
+  var todayStr = today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
+
+  // Nav
   var nav = document.createElement('div'); nav.className = 'cal-nav';
   nav.innerHTML = '<button onclick="calNav(-1)">&#8249;</button><span class="cal-month-label">'+mNames[month]+' '+year+'</span><button onclick="calNav(1)">&#8250;</button>';
   el.appendChild(nav);
 
-  var dHead = document.createElement('div'); dHead.className = 'cal-grid-head';
-  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(function(d){ var s=document.createElement('span');s.textContent=d;dHead.appendChild(s); });
-  el.appendChild(dHead);
+  // Day headers (Sun–Sat + Wk)
+  var hdr = document.createElement('div'); hdr.className = 'cal-header';
+  ['Su','Mo','Tu','We','Th','Fr','Sa','Wk'].forEach(function(d){
+    var s = document.createElement('span'); s.textContent = d; hdr.appendChild(s);
+  });
+  el.appendChild(hdr);
 
-  var grid = document.createElement('div'); grid.className = 'cal-grid';
-  var firstDay = new Date(year,month,1).getDay();
+  // Build week rows (Sun=0 start)
+  var firstDay = new Date(year,month,1).getDay(); // 0=Sun
   var daysInMonth = new Date(year,month+1,0).getDate();
-  var today = new Date();
-  var todayStr = today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
-  var offset = firstDay===0 ? 6 : firstDay-1;
-  for (var i=0;i<offset;i++){ var em=document.createElement('div');em.className='cal-day empty';grid.appendChild(em); }
-  for (var d=1;d<=daysInMonth;d++) {
+  var grid = document.createElement('div'); grid.className = 'cal-grid';
+
+  var weekNum = 1, weekPnl = 0, weekCount = 0, col = firstDay;
+
+  // Empty cells before month starts
+  for (var i=0; i<firstDay; i++) {
+    var emp = document.createElement('div'); emp.className = 'cal-cell cal-empty'; grid.appendChild(emp);
+  }
+
+  for (var d=1; d<=daysInMonth; d++) {
     var dateStr = year+'-'+pad(month+1)+'-'+pad(d);
-    var dt = byDate[dateStr]||[];
+    var dayData = byDate[dateStr];
     var cell = document.createElement('div');
-    cell.className = 'cal-day'+(dt.length?' has-trades':'')+(dateStr===todayStr?' today':'')+(dateStr===JOURNAL.calSelected?' selected':'');
-    var num = document.createElement('span'); num.textContent = d; cell.appendChild(num);
-    if (dt.length) {
-      var dots = document.createElement('div'); dots.className = 'cal-dots';
-      dt.slice(0,3).forEach(function(t){
-        var dot = document.createElement('div'); dot.className = 'cal-dot';
-        dot.style.background = (t.outcome==='WIN'||t.outcome==='WIN PARTIAL')?'var(--green)':(t.outcome==='LOSS'||t.outcome==='LOSS PARTIAL')?'var(--red)':'var(--amber)';
-        dots.appendChild(dot);
-      });
-      cell.appendChild(dots);
+
+    if (dayData) {
+      weekPnl += dayData.pnl; weekCount += dayData.count;
+      var pnlStr = (dayData.pnl>=0?'+£':'–£')+Math.abs(Math.round(dayData.pnl));
+      var pnlColor = dayData.pnl>=0 ? '#a3ffdb' : '#ffaaaa';
+      cell.className = 'cal-cell cal-has'+(dateStr===todayStr?' cal-today':'')+(dateStr===JOURNAL.calSelected?' cal-selected':'');
+      cell.style.background = getDayCellBg(dayData.pnl);
+      cell.innerHTML = '<div class="cal-d">'+d+'</div><div class="cal-pnl" style="color:'+pnlColor+'">'+pnlStr+'</div><div class="cal-cnt">'+dayData.count+' trade'+(dayData.count>1?'s':'')+'</div>';
       cell.onclick = (function(ds){ return function(){ calSelectDay(ds); }; })(dateStr);
+    } else {
+      cell.className = 'cal-cell'+(dateStr===todayStr?' cal-today':'');
+      cell.innerHTML = '<div class="cal-d" style="color:var(--muted2)">'+d+'</div>';
     }
     grid.appendChild(cell);
+
+    // End of week (Saturday=6) or last day — add week total cell
+    if (col===6 || d===daysInMonth) {
+      // Pad remaining days in last partial week
+      if (d===daysInMonth && col<6) {
+        for (var j=col+1; j<=6; j++) {
+          var ep = document.createElement('div'); ep.className='cal-cell cal-empty'; grid.appendChild(ep);
+        }
+      }
+      var wkCell = document.createElement('div'); wkCell.className = 'cal-week-cell';
+      var wkPnlStr = weekCount>0 ? ((weekPnl>=0?'+£':'–£')+Math.abs(Math.round(weekPnl))) : '—';
+      var wkColor = weekPnl>=0 ? 'var(--green)' : 'var(--red)';
+      wkCell.innerHTML = '<div class="cal-wk-label">Wk '+weekNum+'</div><div class="cal-wk-pnl" style="color:'+(weekCount?wkColor:'var(--muted2)')+'">'+wkPnlStr+'</div>';
+      grid.appendChild(wkCell);
+      weekPnl=0; weekCount=0; weekNum++; col=0;
+    } else {
+      col++;
+    }
   }
   el.appendChild(grid);
 
+  // Selected day trades
   if (JOURNAL.calSelected && byDate[JOURNAL.calSelected]) {
     var dayEl = document.createElement('div'); dayEl.className = 'cal-day-trades';
     var dh = document.createElement('div'); dh.className = 'cal-day-trades-head';
-    dh.textContent = JOURNAL.calSelected+' — '+byDate[JOURNAL.calSelected].length+' trade'+(byDate[JOURNAL.calSelected].length>1?'s':'');
+    dh.textContent = JOURNAL.calSelected+' — '+byDate[JOURNAL.calSelected].count+' trade'+(byDate[JOURNAL.calSelected].count>1?'s':'');
     dayEl.appendChild(dh);
-    byDate[JOURNAL.calSelected].forEach(function(t){ dayEl.appendChild(buildJCard(t)); });
+    byDate[JOURNAL.calSelected].list.forEach(function(t){ dayEl.appendChild(buildJCard(t)); });
     el.appendChild(dayEl);
+  } else if (!Object.keys(byDate).length) {
+    el.appendChild(Object.assign(document.createElement('div'),{className:'empty-state',textContent:'No trades this month. Use the arrows to navigate to a month with trades.'}));
   }
 }
 
@@ -1682,14 +1742,35 @@ function buildJCard(t) {
   var dirColor = t.direction==='LONG'?'var(--green)':t.direction==='SHORT'?'var(--red)':'var(--muted)';
   var gc = GC[t.grade]||'var(--muted)'; var gb = GB[t.grade]||'var(--surface2)';
   var card = document.createElement('div'); card.className = 'jcard';
-  var photoHtml = (t.photoBase64&&t.photoBase64.length>200)
+  var hasPhoto = t.photoBase64 && t.photoBase64.indexOf('data:') === 0;
+  var photoHtml = hasPhoto
     ? '<img class="jcard-photo" src="'+t.photoBase64+'" alt="Chart">'
-    : '<div class="jcard-photo-placeholder">📷 No chart photo attached</div>';
+    : '<div class="jcard-photo-placeholder">📷 No chart photo — attach one next time</div>';
+
   var detailRows = '';
-  [['Session',t.session],['Instrument',t.instrument],['Direction',t.direction],['R:R Planned',t.rrPlanned],['R:R Actual',t.rrActual],['Target',t.target],['Momentum',t.momentum],['ES Corr.',t.esCorrelation],['Emotion',t.emotionScore],['Execution',t.execScore],['Sweep',t.sweep],['FVG',t.fvg],['IFVG',t.ifvg],['SMT',t.smt]].forEach(function(f){
-    if (!f[1]||f[1]==='No'||f[1]==='0') return;
-    detailRows += '<div class="jd-row"><span class="jd-label">'+f[0]+'</span><span class="jd-val">'+f[1]+'</span></div>';
+  // Text/select fields — show if non-empty
+  [['Session',t.session],['Instrument',t.instrument],['Direction',t.direction],['ES Corr.',t.esCorrelation],['Target',t.target],['Momentum',t.momentum],['Premium/Discount',t.premiumDiscount]].forEach(function(f){
+    if (f[1] && f[1]!=='' && f[1]!=='undefined') detailRows+='<div class="jd-row"><span class="jd-label">'+f[0]+'</span><span class="jd-val">'+f[1]+'</span></div>';
   });
+  // R:R — show unless both zero/empty
+  var rrp = parseFloat(t.rrPlanned)||0, rra = parseFloat(t.rrActual)||0;
+  if (rrp||rra) detailRows+='<div class="jd-row"><span class="jd-label">R:R</span><span class="jd-val">'+( rrp?rrp:'—')+' planned · '+(rra?rra:'—')+' actual</span></div>';
+  // Scores — show if set
+  var emo = parseInt(t.emotionScore)||0, exc = parseInt(t.execScore)||0;
+  if (emo||exc) detailRows+='<div class="jd-row"><span class="jd-label">Scores</span><span class="jd-val">Emotion '+( emo||'—')+' · Execution '+(exc||'—')+'</span></div>';
+  // Confluences — Yes fields only
+  var confl = [];
+  if (t.sweep==='Yes') confl.push('Sweep');
+  if (t.fvg==='Yes') confl.push('FVG');
+  if (t.ifvg==='Yes') confl.push('IFVG');
+  if (t.smt==='Yes') confl.push('SMT');
+  if (t.displacement==='Yes') confl.push('Displacement');
+  if (t.fvgDelivery==='Yes') confl.push('FVG Delivery');
+  if (t.eq==='Yes') confl.push('EQ 50%');
+  if (t.inLineWithBias==='Yes') confl.push('In Bias');
+  if (confl.length) detailRows+='<div class="jd-row"><span class="jd-label">Confluences</span><span class="jd-val" style="text-align:right">'+confl.join(' · ')+'</span></div>';
+  // Classification
+  if (t.goodBadLoss) detailRows+='<div class="jd-row"><span class="jd-label">Classification</span><span class="jd-val">'+t.goodBadLoss+'</span></div>';
   if (t.doneWell) detailRows += '<div class="jd-note"><strong>✓ Done well:</strong> '+t.doneWell+'</div>';
   if (t.wouldChange) detailRows += '<div class="jd-note"><strong>⚠ Change:</strong> '+t.wouldChange+'</div>';
   card.innerHTML = photoHtml +
