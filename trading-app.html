@@ -211,13 +211,71 @@ nav.bottom button svg{width:20px;height:20px;}
 .s-bar-track{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;}
 .s-bar-fill{height:100%;border-radius:2px;transition:width .6s ease;}
 
-/* ── REVIEW PANEL ────────────────────────────────────────── */
-.filter-bar{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;}
-.filter-bar::-webkit-scrollbar{display:none;}
-.filter-chip{flex-shrink:0;padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.04em;transition:all .12s;-webkit-tap-highlight-color:transparent;}
-.filter-chip.active{background:var(--surface);border-color:var(--blue);color:var(--text);}
+/* ── JOURNAL PANEL ────────────────────────────────────────── */
+.view-toggle{display:flex;gap:0;margin-bottom:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.view-toggle button{flex:1;padding:9px 6px;font-size:12px;font-weight:700;color:var(--muted);border-right:1px solid var(--border);letter-spacing:.03em;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.view-toggle button:last-child{border-right:none;}
+.view-toggle button.active{background:var(--surface2);color:var(--text);}
 
-.trade-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;transition:border-color .15s;}
+/* Month / Grade list view */
+.jmonth-section{margin-bottom:20px;}
+.jmonth-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.jmonth-label{font-size:13px;font-weight:800;color:var(--text);}
+.jmonth-meta{font-size:12px;color:var(--muted);}
+
+/* Journal trade card */
+.jcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;transition:border-color .15s;}
+.jcard.expanded{border-color:var(--border2);}
+.jcard-photo{width:100%;display:block;max-height:200px;object-fit:cover;border-bottom:1px solid var(--border);}
+.jcard-photo-placeholder{height:72px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--muted2);font-size:12px;border-bottom:1px solid var(--border);}
+.jcard-header{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.jcard-grade{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
+.jcard-main{flex:1;min-width:0;}
+.jcard-top{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.jcard-date{font-size:13px;font-weight:700;}
+.jcard-session{font-size:11px;color:var(--muted);font-weight:600;}
+.jcard-bottom{display:flex;align-items:center;gap:8px;}
+.jcard-instr{font-size:11px;color:var(--muted);}
+.jcard-dir{font-size:11px;font-weight:700;}
+.jcard-outcome{font-size:10px;font-weight:700;padding:3px 7px;border-radius:4px;letter-spacing:.04em;}
+.jcard-pnl{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;margin-left:auto;}
+.jcard-chevron{color:var(--muted);font-size:14px;transition:transform .2s;flex-shrink:0;}
+.jcard.expanded .jcard-chevron{transform:rotate(180deg);}
+.jcard-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border);}
+.jcard.expanded .jcard-body{display:block;}
+.jd-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.jd-row:last-child{border-bottom:none;}
+.jd-label{color:var(--muted);}
+.jd-val{font-weight:600;text-align:right;max-width:60%;}
+.jd-note{padding:8px 0;font-size:13px;color:var(--muted);line-height:1.5;border-bottom:1px solid var(--border);}
+.jd-note:last-child{border-bottom:none;padding-bottom:0;}
+.jd-note strong{color:var(--text);font-weight:600;}
+
+/* Calendar view */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.cal-nav button{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+.cal-month-label{font-size:15px;font-weight:800;}
+.cal-grid-head{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;}
+.cal-grid-head span{text-align:center;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.06em;padding:4px 0;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:14px;}
+.cal-day{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:600;color:var(--muted);border:1px solid transparent;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent;transition:all .12s;}
+.cal-day.has-trades{color:var(--text);border-color:var(--border);background:var(--surface);}
+.cal-day.today{border-color:var(--blue)!important;color:var(--blue);}
+.cal-day.selected{background:var(--surface2);border-color:var(--blue)!important;}
+.cal-day.empty{pointer-events:none;}
+.cal-dots{display:flex;gap:2px;justify-content:center;}
+.cal-dot{width:5px;height:5px;border-radius:50%;}
+.cal-day-trades{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.cal-day-trades-head{padding:10px 14px;font-size:12px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border);}
+
+/* Grade sections */
+.jgrade-section{margin-bottom:20px;}
+.jgrade-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+.jgrade-badge{padding:4px 10px;border-radius:6px;font-size:13px;font-weight:800;}
+.jgrade-stats{font-size:12px;color:var(--muted);}
+
+/* Trade card (old review — kept for backward compat) */
+.trade-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;}
 .trade-card.expanded{border-color:var(--border2);}
 .trade-card-header{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .tc-grade{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
@@ -232,7 +290,6 @@ nav.bottom button svg{width:20px;height:20px;}
 .tc-outcome{font-size:10px;font-weight:700;padding:3px 7px;border-radius:4px;letter-spacing:.04em;}
 .tc-chevron{color:var(--muted);font-size:14px;transition:transform .2s;}
 .trade-card.expanded .tc-chevron{transform:rotate(180deg);}
-
 .trade-card-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border);}
 .trade-card.expanded .trade-card-body{display:block;}
 .td-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
@@ -645,20 +702,17 @@ nav.bottom button svg{width:20px;height:20px;}
       <div id="d-insights"><div class="empty-state">Log trades to see insights</div></div>
     </div><!-- /stats -->
 
-    <!-- ══════════════════════════════════ REVIEW -->
+    <!-- ══════════════════════════════════ JOURNAL -->
     <div class="panel" id="panel-review">
-      <div class="filter-bar" id="review-filters">
-        <button class="filter-chip active" data-f="all">All</button>
-        <button class="filter-chip" data-f="A+">A+</button>
-        <button class="filter-chip" data-f="A">A</button>
-        <button class="filter-chip" data-f="A-">A-</button>
-        <button class="filter-chip" data-f="B+">B+</button>
-        <button class="filter-chip" data-f="WIN">Wins</button>
-        <button class="filter-chip" data-f="LOSS">Losses</button>
-        <button class="filter-chip" data-f="GAMBLE">Gambles</button>
+      <div class="view-toggle" id="journal-view-toggle">
+        <button class="active" data-view="month" onclick="setJournalView('month',this)">By Month</button>
+        <button data-view="grade" onclick="setJournalView('grade',this)">By Grade</button>
+        <button data-view="calendar" onclick="setJournalView('calendar',this)">Calendar</button>
       </div>
-      <div id="trade-gallery"><div class="empty-state">No trades logged yet.<br>Submit a trade to see it here.</div></div>
-    </div><!-- /review -->
+      <div id="journal-month"></div>
+      <div id="journal-grade" style="display:none"></div>
+      <div id="journal-calendar" style="display:none"></div>
+    </div><!-- /journal -->
 
     <!-- ══════════════════════════════════ SETTINGS -->
     <div class="panel" id="panel-settings">
@@ -699,7 +753,7 @@ nav.bottom button svg{width:20px;height:20px;}
     </button>
     <button onclick="switchTab('review',this)" id="nav-review">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg>
-      Review
+      Journal
     </button>
     <button onclick="switchTab('settings',this)" id="nav-settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
@@ -794,7 +848,6 @@ var STATE = {
   webAppUrl: localStorage.getItem('smc_webapp_url') || '',
   photoData: null,
   equityChart: null,
-  reviewFilter: 'all',
   allTrades: []
 };
 
@@ -813,7 +866,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initScoreRows();
   initConceptBtns();
   initPhotoUpload();
-  initReviewFilters();
+  renderJournal();
   loadSettings();
   updateConnStatus();
   startSessionClock();
@@ -906,10 +959,10 @@ function switchTab(tab, btn) {
   document.querySelectorAll('nav.bottom button').forEach(function(b) { b.classList.remove('active'); });
   document.getElementById('panel-'+tab).classList.add('active');
   btn.classList.add('active');
-  var subs = {checklist:'Pre-Session Checklist', trade:'Trade Entry', stats:'Performance', review:'Trade Review', settings:'Settings'};
+  var subs = {checklist:'Pre-Session Checklist', trade:'Trade Entry', stats:'Performance', review:'Trade Journal', settings:'Settings'};
   document.getElementById('header-sub').textContent = subs[tab] || 'NQ/MNQ Futures';
   if (tab === 'stats') loadDashboard();
-  if (tab === 'review') renderGallery();
+  if (tab === 'review') renderJournal();
 }
 
 // ── BUTTON GROUP LOGIC ─────────────────────────────────
@@ -1476,112 +1529,184 @@ function renderInsights(trades) {
   });
 }
 
-// ── REVIEW / GALLERY ───────────────────────────────────
-function initReviewFilters() {
-  document.querySelectorAll('#review-filters .filter-chip').forEach(function(chip) {
-    chip.addEventListener('click', function() {
-      document.querySelectorAll('#review-filters .filter-chip').forEach(function(c){ c.classList.remove('active'); });
-      chip.classList.add('active');
-      STATE.reviewFilter = chip.dataset.f;
-      renderGallery();
-    });
-  });
+// ── JOURNAL ────────────────────────────────────────────────
+var JOURNAL = { view: 'month', calYear: new Date().getFullYear(), calMonth: new Date().getMonth(), calSelected: null };
+var GC = {'A+':'#00d483','A':'#22c55e','A-':'#84cc16','B+':'#f59e0b','B':'#ef4444','B-':'#dc2626','C':'#991b1b'};
+var GB = {'A+':'rgba(0,212,131,.15)','A':'rgba(34,197,94,.15)','A-':'rgba(132,204,22,.15)','B+':'rgba(245,158,11,.15)','B':'rgba(239,68,68,.15)','B-':'rgba(220,38,38,.15)','C':'rgba(153,27,27,.2)'};
+
+function getJournalTrades() {
+  var local = JSON.parse(localStorage.getItem('smc_trades') || '[]');
+  var api = STATE.allTrades || [];
+  var keys = {};
+  local.forEach(function(t){ keys[(t.date||'')+'_'+(t.grade||'')] = true; });
+  api.forEach(function(at){ if (!keys[(at.date||'')+'_'+(at.grade||'')]) local.push(at); });
+  return local.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
 }
 
-function renderGallery() {
-  var localTrades = JSON.parse(localStorage.getItem('smc_trades') || '[]');
+function setJournalView(view, btn) {
+  JOURNAL.view = view;
+  document.querySelectorAll('#journal-view-toggle button').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('journal-month').style.display    = view==='month'    ? '' : 'none';
+  document.getElementById('journal-grade').style.display    = view==='grade'    ? '' : 'none';
+  document.getElementById('journal-calendar').style.display = view==='calendar' ? '' : 'none';
+  renderJournal();
+}
 
-  // Merge API trades (from stats load) with localStorage — local data wins (richer fields)
-  var apiTrades = STATE.allTrades || [];
-  var localKeys = {};
-  localTrades.forEach(function(t) { localKeys[(t.date||'')+'_'+(t.grade||'')] = true; });
-  apiTrades.forEach(function(at) {
-    if (!localKeys[(at.date||'')+'_'+(at.grade||'')]) localTrades.push(at);
-  });
+function renderJournal() {
+  var trades = getJournalTrades();
+  if (JOURNAL.view === 'month') renderJournalMonth(trades);
+  else if (JOURNAL.view === 'grade') renderJournalGrade(trades);
+  else renderJournalCalendar(trades);
+}
 
-  var trades = localTrades;
-  var f = STATE.reviewFilter;
-  var filtered = trades.filter(function(t) {
-    if (f === 'all') return true;
-    if (f === 'WIN') return t.outcome === 'WIN' || t.outcome === 'WIN PARTIAL';
-    if (f === 'LOSS') return t.outcome === 'LOSS' || t.outcome === 'LOSS PARTIAL';
-    if (f === 'GAMBLE') return t.outcome === 'GAMBLE';
-    return t.grade === f;
-  });
-  filtered = filtered.slice().reverse(); // most recent first
-
-  var el = document.getElementById('trade-gallery');
+function renderJournalMonth(trades) {
+  var el = document.getElementById('journal-month');
   el.innerHTML = '';
+  if (!trades.length) { el.innerHTML = '<div class="empty-state">No trades yet. Log your first trade to see it here.</div>'; return; }
+  var groups = {}, order = [];
+  trades.forEach(function(t) {
+    var key = (t.date||'').substring(0,7);
+    if (!groups[key]) { groups[key] = []; order.push(key); }
+    groups[key].push(t);
+  });
+  order.forEach(function(key) {
+    var gt = groups[key];
+    var pnlSum = gt.reduce(function(s,t){ return s+(parseFloat(t.pnl)||0); },0);
+    var wins = gt.filter(function(t){ return t.outcome==='WIN'||t.outcome==='WIN PARTIAL'; }).length;
+    var losses = gt.filter(function(t){ return t.outcome==='LOSS'||t.outcome==='LOSS PARTIAL'; }).length;
+    var wr = (wins+losses)>0 ? Math.round(wins/(wins+losses)*100)+'%' : '—';
+    var d = new Date(key+'-02'); // use day 2 to avoid timezone edge
+    var monthLabel = d.toLocaleString('en-GB',{month:'long',year:'numeric'});
+    var pnlColor = pnlSum>=0 ? 'var(--green)' : 'var(--red)';
+    var section = document.createElement('div'); section.className = 'jmonth-section';
+    var head = document.createElement('div'); head.className = 'jmonth-head';
+    head.innerHTML = '<span class="jmonth-label">'+monthLabel+'</span><span class="jmonth-meta" style="color:'+pnlColor+'">'+(pnlSum>=0?'+':'')+'£'+Math.round(pnlSum)+' · '+wr+' · '+gt.length+' trades</span>';
+    section.appendChild(head);
+    gt.forEach(function(t){ section.appendChild(buildJCard(t)); });
+    el.appendChild(section);
+  });
+}
 
-  if (!filtered.length) {
-    el.innerHTML = '<div class="empty-state">No trades match this filter.</div>';
-    return;
+function renderJournalGrade(trades) {
+  var el = document.getElementById('journal-grade');
+  el.innerHTML = '';
+  if (!trades.length) { el.innerHTML = '<div class="empty-state">No trades yet.</div>'; return; }
+  ['A+','A','A-','B+','B','B-','C'].forEach(function(g) {
+    var gt = trades.filter(function(t){ return t.grade===g; });
+    if (!gt.length) return;
+    var wins = gt.filter(function(t){ return t.outcome==='WIN'||t.outcome==='WIN PARTIAL'; }).length;
+    var losses = gt.filter(function(t){ return t.outcome==='LOSS'||t.outcome==='LOSS PARTIAL'; }).length;
+    var wr = (wins+losses)>0 ? Math.round(wins/(wins+losses)*100)+'%' : '—';
+    var pnl = gt.reduce(function(s,t){ return s+(parseFloat(t.pnl)||0); },0);
+    var pnlColor = pnl>=0 ? 'var(--green)' : 'var(--red)';
+    var section = document.createElement('div'); section.className = 'jgrade-section';
+    var head = document.createElement('div'); head.className = 'jgrade-head';
+    head.innerHTML = '<div class="jgrade-badge" style="background:'+GB[g]+';color:'+GC[g]+'">'+g+'</div><div class="jgrade-stats">'+gt.length+' trades · '+wr+' WR · <span style="color:'+pnlColor+'">'+(pnl>=0?'+':'')+'£'+Math.round(pnl)+'</span></div>';
+    section.appendChild(head);
+    gt.forEach(function(t){ section.appendChild(buildJCard(t)); });
+    el.appendChild(section);
+  });
+}
+
+function renderJournalCalendar(trades) {
+  var el = document.getElementById('journal-calendar'); el.innerHTML = '';
+  var year = JOURNAL.calYear, month = JOURNAL.calMonth;
+  var mNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var byDate = {};
+  trades.forEach(function(t){ if (!t.date) return; if (!byDate[t.date]) byDate[t.date]=[]; byDate[t.date].push(t); });
+
+  var nav = document.createElement('div'); nav.className = 'cal-nav';
+  nav.innerHTML = '<button onclick="calNav(-1)">&#8249;</button><span class="cal-month-label">'+mNames[month]+' '+year+'</span><button onclick="calNav(1)">&#8250;</button>';
+  el.appendChild(nav);
+
+  var dHead = document.createElement('div'); dHead.className = 'cal-grid-head';
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(function(d){ var s=document.createElement('span');s.textContent=d;dHead.appendChild(s); });
+  el.appendChild(dHead);
+
+  var grid = document.createElement('div'); grid.className = 'cal-grid';
+  var firstDay = new Date(year,month,1).getDay();
+  var daysInMonth = new Date(year,month+1,0).getDate();
+  var today = new Date();
+  var todayStr = today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
+  var offset = firstDay===0 ? 6 : firstDay-1;
+  for (var i=0;i<offset;i++){ var em=document.createElement('div');em.className='cal-day empty';grid.appendChild(em); }
+  for (var d=1;d<=daysInMonth;d++) {
+    var dateStr = year+'-'+pad(month+1)+'-'+pad(d);
+    var dt = byDate[dateStr]||[];
+    var cell = document.createElement('div');
+    cell.className = 'cal-day'+(dt.length?' has-trades':'')+(dateStr===todayStr?' today':'')+(dateStr===JOURNAL.calSelected?' selected':'');
+    var num = document.createElement('span'); num.textContent = d; cell.appendChild(num);
+    if (dt.length) {
+      var dots = document.createElement('div'); dots.className = 'cal-dots';
+      dt.slice(0,3).forEach(function(t){
+        var dot = document.createElement('div'); dot.className = 'cal-dot';
+        dot.style.background = (t.outcome==='WIN'||t.outcome==='WIN PARTIAL')?'var(--green)':(t.outcome==='LOSS'||t.outcome==='LOSS PARTIAL')?'var(--red)':'var(--amber)';
+        dots.appendChild(dot);
+      });
+      cell.appendChild(dots);
+      cell.onclick = (function(ds){ return function(){ calSelectDay(ds); }; })(dateStr);
+    }
+    grid.appendChild(cell);
   }
+  el.appendChild(grid);
 
-  var gradeColors = {'A+':'#00d483','A':'#22c55e','A-':'#84cc16','B+':'#f59e0b','B':'#ef4444','B-':'#dc2626','C':'#991b1b'};
-  var gradesBg = {'A+':'rgba(0,212,131,.15)','A':'rgba(34,197,94,.15)','A-':'rgba(132,204,22,.15)','B+':'rgba(245,158,11,.15)','B':'rgba(239,68,68,.15)','B-':'rgba(220,38,38,.15)','C':'rgba(153,27,27,.2)'};
+  if (JOURNAL.calSelected && byDate[JOURNAL.calSelected]) {
+    var dayEl = document.createElement('div'); dayEl.className = 'cal-day-trades';
+    var dh = document.createElement('div'); dh.className = 'cal-day-trades-head';
+    dh.textContent = JOURNAL.calSelected+' — '+byDate[JOURNAL.calSelected].length+' trade'+(byDate[JOURNAL.calSelected].length>1?'s':'');
+    dayEl.appendChild(dh);
+    byDate[JOURNAL.calSelected].forEach(function(t){ dayEl.appendChild(buildJCard(t)); });
+    el.appendChild(dayEl);
+  }
+}
 
-  filtered.forEach(function(t, idx) {
-    var pnl = parseFloat(t.pnl) || 0;
-    var pnlStr = (pnl >= 0 ? '+' : '')+'£'+Math.abs(Math.round(pnl));
-    var pnlColor = pnl > 0 ? 'var(--green)' : pnl < 0 ? 'var(--red)' : 'var(--muted)';
-    var outcomeColor = (t.outcome==='WIN'||t.outcome==='WIN PARTIAL') ? 'var(--green)' :
-                       (t.outcome==='LOSS'||t.outcome==='LOSS PARTIAL') ? 'var(--red)' :
-                       t.outcome==='GAMBLE' ? '#ff66ff' : 'var(--amber)';
-    var dirColor = t.direction==='LONG' ? 'var(--green)' : 'var(--red)';
-    var gc = gradeColors[t.grade] || 'var(--muted)';
-    var gb = gradesBg[t.grade] || 'var(--surface2)';
+function calNav(dir) {
+  JOURNAL.calMonth += dir;
+  if (JOURNAL.calMonth>11){JOURNAL.calMonth=0;JOURNAL.calYear++;}
+  if (JOURNAL.calMonth<0){JOURNAL.calMonth=11;JOURNAL.calYear--;}
+  JOURNAL.calSelected = null;
+  renderJournalCalendar(getJournalTrades());
+}
 
-    var card = document.createElement('div');
-    card.className = 'trade-card';
-    card.innerHTML =
-      '<div class="trade-card-header" onclick="toggleCard(this.parentElement)">' +
-        '<div class="tc-grade" style="background:'+gb+';color:'+gc+'">'+( t.grade||'?')+'</div>' +
-        '<div class="tc-main">' +
-          '<div class="tc-top"><span class="tc-date">'+(t.date||'—')+'</span><span class="tc-session">'+(t.session||'')+'</span></div>' +
-          '<div class="tc-bottom">' +
-            '<span class="tc-instr">'+(t.instrument||'')+'</span>' +
-            '<span class="tc-dir" style="color:'+dirColor+'">'+(t.direction||'')+'</span>' +
-            '<span class="tc-outcome" style="background:'+outcomeColor+'22;color:'+outcomeColor+'">'+(t.outcome||'—')+'</span>' +
-          '</div>' +
-        '</div>' +
-        '<span class="tc-pnl" style="color:'+pnlColor+'">'+pnlStr+'</span>' +
-        '<span class="tc-chevron">▾</span>' +
+function calSelectDay(dateStr) {
+  JOURNAL.calSelected = JOURNAL.calSelected===dateStr ? null : dateStr;
+  renderJournalCalendar(getJournalTrades());
+}
+
+function buildJCard(t) {
+  var pnl = parseFloat(t.pnl)||0;
+  var pnlStr = (pnl>=0?'+':'')+'£'+Math.abs(Math.round(pnl));
+  var pnlColor = pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)';
+  var outcomeColor = (t.outcome==='WIN'||t.outcome==='WIN PARTIAL')?'var(--green)':(t.outcome==='LOSS'||t.outcome==='LOSS PARTIAL')?'var(--red)':t.outcome==='GAMBLE'?'#ff66ff':'var(--amber)';
+  var dirColor = t.direction==='LONG'?'var(--green)':t.direction==='SHORT'?'var(--red)':'var(--muted)';
+  var gc = GC[t.grade]||'var(--muted)'; var gb = GB[t.grade]||'var(--surface2)';
+  var card = document.createElement('div'); card.className = 'jcard';
+  var photoHtml = (t.photoBase64&&t.photoBase64.length>200)
+    ? '<img class="jcard-photo" src="'+t.photoBase64+'" alt="Chart">'
+    : '<div class="jcard-photo-placeholder">📷 No chart photo attached</div>';
+  var detailRows = '';
+  [['Session',t.session],['Instrument',t.instrument],['Direction',t.direction],['R:R Planned',t.rrPlanned],['R:R Actual',t.rrActual],['Target',t.target],['Momentum',t.momentum],['ES Corr.',t.esCorrelation],['Emotion',t.emotionScore],['Execution',t.execScore],['Sweep',t.sweep],['FVG',t.fvg],['IFVG',t.ifvg],['SMT',t.smt]].forEach(function(f){
+    if (!f[1]||f[1]==='No'||f[1]==='0') return;
+    detailRows += '<div class="jd-row"><span class="jd-label">'+f[0]+'</span><span class="jd-val">'+f[1]+'</span></div>';
+  });
+  if (t.doneWell) detailRows += '<div class="jd-note"><strong>✓ Done well:</strong> '+t.doneWell+'</div>';
+  if (t.wouldChange) detailRows += '<div class="jd-note"><strong>⚠ Change:</strong> '+t.wouldChange+'</div>';
+  card.innerHTML = photoHtml +
+    '<div class="jcard-header" onclick="this.parentElement.classList.toggle(\'expanded\')">' +
+      '<div class="jcard-grade" style="background:'+gb+';color:'+gc+'">'+(t.grade||'?')+'</div>' +
+      '<div class="jcard-main">' +
+        '<div class="jcard-top"><span class="jcard-date">'+(t.date||'—')+'</span><span class="jcard-session">'+(t.session||'')+'</span></div>' +
+        '<div class="jcard-bottom"><span class="jcard-instr">'+(t.instrument||'')+'</span><span class="jcard-dir" style="color:'+dirColor+'">'+(t.direction||'')+'</span><span class="jcard-outcome" style="background:'+outcomeColor+'22;color:'+outcomeColor+'">'+(t.outcome||'—')+'</span></div>' +
       '</div>' +
-      '<div class="trade-card-body">' +
-        buildTradeRows(t) +
-      '</div>';
-    el.appendChild(card);
-  });
+      '<span class="jcard-pnl" style="color:'+pnlColor+'">'+pnlStr+'</span>' +
+      '<span class="jcard-chevron">&#9662;</span>' +
+    '</div>' +
+    (detailRows?'<div class="jcard-body">'+detailRows+'</div>':'');
+  return card;
 }
 
-function buildTradeRows(t) {
-  var rows = '';
-  var fields = [
-    ['R:R Planned', t.rrPlanned||'—'],
-    ['R:R Actual', t.rrActual||'—'],
-    ['Sweep', t.sweep], ['FVG', t.fvg], ['IFVG', t.ifvg], ['SMT', t.smt],
-    ['Momentum', t.momentum], ['Target', t.target],
-    ['ES Correlation', t.esCorrelation],
-    ['Emotion Score', t.emotionScore],
-    ['Execution Score', t.execScore],
-    ['Classification', t.goodBadLoss]
-  ];
-  fields.forEach(function(f) {
-    if (!f[1] || f[1] === 'No') return;
-    rows += '<div class="td-row"><span class="td-label">'+f[0]+'</span><span class="td-val">'+f[1]+'</span></div>';
-  });
-  if (t.doneWell) rows += '<div class="td-note"><strong>Done well:</strong> '+t.doneWell+'</div>';
-  if (t.wouldChange) rows += '<div class="td-note"><strong>Change:</strong> '+t.wouldChange+'</div>';
-  if (t.photoBase64 && t.photoBase64.length > 100) {
-    rows += '<div style="padding-top:10px"><img src="'+t.photoBase64+'" style="width:100%;border-radius:8px;border:1px solid var(--border)"></div>';
-  }
-  return rows;
-}
-
-function toggleCard(card) {
-  card.classList.toggle('expanded');
-}
+function toggleCard(card){ card.classList.toggle('expanded'); }
 
 // ── GRADE DRAWER ───────────────────────────────────────
 function openGradeDrawer() {
