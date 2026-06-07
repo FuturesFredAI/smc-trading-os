@@ -1489,7 +1489,17 @@ function initReviewFilters() {
 }
 
 function renderGallery() {
-  var trades = JSON.parse(localStorage.getItem('smc_trades') || '[]');
+  var localTrades = JSON.parse(localStorage.getItem('smc_trades') || '[]');
+
+  // Merge API trades (from stats load) with localStorage — local data wins (richer fields)
+  var apiTrades = STATE.allTrades || [];
+  var localKeys = {};
+  localTrades.forEach(function(t) { localKeys[(t.date||'')+'_'+(t.grade||'')] = true; });
+  apiTrades.forEach(function(at) {
+    if (!localKeys[(at.date||'')+'_'+(at.grade||'')]) localTrades.push(at);
+  });
+
+  var trades = localTrades;
   var f = STATE.reviewFilter;
   var filtered = trades.filter(function(t) {
     if (f === 'all') return true;
