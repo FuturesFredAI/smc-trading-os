@@ -1,4 +1,4 @@
-const CACHE = 'smc-trading-os-v2';
+const CACHE = 'smc-trading-os-v3';
 const ASSETS = [
   './trading-app.html',
   './manifest.json',

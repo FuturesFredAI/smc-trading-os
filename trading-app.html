@@ -352,6 +352,64 @@ nav.bottom button svg{width:20px;height:20px;}
 /* ── GRADE ASSIST TOGGLE ──────────────────────────────────── */
 .grade-assist-btn{width:100%;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:6px;}
 .grade-assist-btn:active{background:var(--surface2);}
+
+/* ── PSYCHOLOGY TAB ───────────────────────────────────────── */
+.psych-hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 16px;margin-bottom:10px;text-align:center;}
+.psych-hero .ph-headline{font-size:17px;font-weight:900;color:var(--text);line-height:1.3;margin-bottom:6px;}
+.psych-hero .ph-sub{font-size:13px;color:var(--muted);line-height:1.5;}
+.psych-hero .ph-sub strong{color:var(--green);}
+.psych-grade-bars{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.psych-grade-bars h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px;}
+.pgb-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.pgb-row:last-child{margin-bottom:0;}
+.pgb-label{font-size:13px;font-weight:800;width:32px;flex-shrink:0;}
+.pgb-track{flex:1;height:12px;background:var(--surface2);border-radius:6px;overflow:hidden;}
+.pgb-fill{height:100%;border-radius:6px;transition:width .8s ease;}
+.pgb-pct{font-size:12px;font-weight:700;width:38px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums;}
+.pgb-n{font-size:10px;color:var(--muted2);width:38px;flex-shrink:0;}
+.psych-live-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-bg);border:1px solid var(--green);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;color:var(--green);margin-top:12px;letter-spacing:.04em;}
+.psych-mistake-list{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;}
+.psych-mistake-list h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:12px 14px 0;}
+.pm-row{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;border-bottom:1px solid var(--border);}
+.pm-row:last-child{border-bottom:none;}
+.pm-rank{font-size:11px;font-weight:800;color:var(--muted2);width:20px;flex-shrink:0;margin-top:2px;}
+.pm-body{flex:1;}
+.pm-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.pm-detail{font-size:11px;color:var(--muted);line-height:1.45;}
+.pm-count{font-size:14px;font-weight:900;color:var(--red);flex-shrink:0;font-variant-numeric:tabular-nums;}
+.psych-pattern-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:8px;}
+.psych-pattern-card .ppc-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.psych-pattern-card .ppc-icon{font-size:22px;line-height:1;}
+.psych-pattern-card .ppc-title{font-size:14px;font-weight:800;color:var(--text);}
+.psych-pattern-card .ppc-body{font-size:13px;color:var(--muted);line-height:1.6;}
+.psych-pattern-card .ppc-body strong{color:var(--text);}
+.psych-pattern-card .ppc-dynamic{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);}
+.psych-pattern-card .ppc-dynamic strong{color:var(--text);}
+.psych-pattern-card.danger{border-color:rgba(255,68,85,.35);}
+.psych-pattern-card.amber-border{border-color:rgba(245,158,11,.35);}
+.psych-rules{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;}
+.psych-rules h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:12px 14px 8px;}
+.pr-row{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;border-bottom:1px solid var(--border);}
+.pr-row:last-child{border-bottom:none;}
+.pr-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.pr-body{flex:1;}
+.pr-rule{font-size:13px;font-weight:700;color:var(--red);margin-bottom:2px;}
+.pr-evidence{font-size:11px;color:var(--muted);line-height:1.45;}
+.psych-monitor{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.psych-monitor h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px;}
+.pm-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.pm-stat{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 12px;}
+.pm-stat .psv{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;}
+.pm-stat .psl{font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
+.emotion-dots{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.emotion-dot{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+.psych-reminders{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.psych-reminders h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;}
+.reminder-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+.reminder-item:last-child{border-bottom:none;padding-bottom:0;}
+.reminder-item .ri-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.reminder-item .ri-text{font-size:13px;color:var(--text);line-height:1.5;font-weight:500;}
+.reminder-item .ri-text em{color:var(--green);font-style:normal;font-weight:700;}
 </style>
 </head>
 <body>
@@ -720,6 +778,141 @@ nav.bottom button svg{width:20px;height:20px;}
       <div id="journal-calendar" style="display:none"></div>
     </div><!-- /journal -->
 
+    <!-- ══════════════════════════════════ PSYCHOLOGY -->
+    <div class="panel" id="panel-psych">
+
+      <!-- S1: YOUR EDGE -->
+      <div class="section-title">Your Edge</div>
+      <div class="psych-hero">
+        <div class="ph-headline">The strategy has never lost.<br>Not once. When applied correctly.</div>
+        <div class="ph-sub">109 trades. 20 graded trades were mistakes confirmed by your own notes. Strip those out: <strong>A+, A, A-, B+ all have 100% clean win rates.</strong> The strategy is not the problem. It has never been the problem.</div>
+      </div>
+
+      <div class="psych-grade-bars" id="psych-grade-bars">
+        <h3>Clean Win Rates — Mistakes Removed (109 Trade Dataset)</h3>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;">Raw rates include mistake trades condemned by your own notes. Clean rates show only legitimate setups. Every graded loss came from a mistake trade.</div>
+
+        <div class="pgb-row">
+          <span class="pgb-label" style="color:#00d483">A+</span>
+          <div class="pgb-track"><div class="pgb-fill" style="width:100%;background:#00d483"></div></div>
+          <span class="pgb-pct" style="color:#00d483">100%</span>
+          <span class="pgb-n">4/4</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted2);margin:-6px 0 8px 42px;">0 mistakes removed · raw = 100%</div>
+
+        <div class="pgb-row">
+          <span class="pgb-label" style="color:#22c55e">A</span>
+          <div class="pgb-track"><div class="pgb-fill" style="width:67%;background:#22c55e"></div></div>
+          <span class="pgb-pct" style="color:#22c55e">67%</span>
+          <span class="pgb-n">6/8</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted2);margin:-6px 0 8px 42px;">2 mistakes removed (#19 LUCKY, #35 BAD PA) · raw was 71%*</div>
+
+        <div class="pgb-row">
+          <span class="pgb-label" style="color:#00d483">A-</span>
+          <div class="pgb-track"><div class="pgb-fill" style="width:100%;background:#00d483"></div></div>
+          <span class="pgb-pct" style="color:#00d483">100%</span>
+          <span class="pgb-n">4/13</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted2);margin:-6px 0 8px 42px;">6 mistakes removed · raw was 31% — CONTAMINATED</div>
+
+        <div class="pgb-row">
+          <span class="pgb-label" style="color:#00d483">B+</span>
+          <div class="pgb-track"><div class="pgb-fill" style="width:100%;background:#00d483"></div></div>
+          <span class="pgb-pct" style="color:#00d483">100%</span>
+          <span class="pgb-n">4/10</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted2);margin:-6px 0 8px 42px;">5 mistakes removed · raw was 50% — CONTAMINATED</div>
+
+        <div class="pgb-row">
+          <span class="pgb-label" style="color:#ef4444">B/C</span>
+          <div class="pgb-track"><div class="pgb-fill" style="width:1%;background:#ef4444"></div></div>
+          <span class="pgb-pct" style="color:#ef4444">0%</span>
+          <span class="pgb-n">—</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted2);margin:-6px 0 8px 42px;">All B/C trades were mistakes. Zero legitimate trades at this grade.</div>
+
+        <div style="font-size:10px;color:var(--amber);margin-top:8px;line-height:1.5;">*A raw WR was inflated by trade #19 (LUCKY win). Removing a winning mistake actually lowered the rate — the luck was hiding in the stats.</div>
+        <div id="psych-live-edge" style="text-align:center;margin-top:10px;"></div>
+      </div>
+
+      <!-- S2: YOUR #1 PROBLEMS -->
+      <div class="section-title">#1 Problems — From Your Own Notes</div>
+      <div class="psych-mistake-list">
+        <h3>Mistake Categories — Full Dataset (109 trades)</h3>
+        <div class="pm-row"><span class="pm-rank">#1</span><div class="pm-body"><div class="pm-title">Gambled</div><div class="pm-detail">#45,46,57,81,83,84,91,93,94,96,101,103,104,106 — no entry model, full port, chased wins. 7 blown funded accounts.</div></div><span class="pm-count">14×</span></div>
+        <div class="pm-row"><span class="pm-rank">#2</span><div class="pm-body"><div class="pm-title">Traded in poor state</div><div class="pm-detail">#15,16,24,46,54,83,85,91,101,106 — hungover, anxious, tired, emotional. 100% correlation with bad outcomes.</div></div><span class="pm-count">10×</span></div>
+        <div class="pm-row"><span class="pm-rank">#3</span><div class="pm-body"><div class="pm-title">Execution failure</div><div class="pm-detail">#4,7,12,14,32,33,35,54,74 — SL too tight, stale PA, overgraded, entry too late.</div></div><span class="pm-count">9×</span></div>
+        <div class="pm-row"><span class="pm-rank">#4</span><div class="pm-body"><div class="pm-title">Greed</div><div class="pm-detail">#16,17,22,28,34,42 — position mgmt, re-entries, sizing. Won the trade then gave it back.</div></div><span class="pm-count">6×</span></div>
+        <div class="pm-row"><span class="pm-rank">#4</span><div class="pm-body"><div class="pm-title">Rushed / impatient entry</div><div class="pm-detail">#32,33,41,42,44,99 — bad PA, forced entry, caught in false move.</div></div><span class="pm-count">6×</span></div>
+        <div class="pm-row"><span class="pm-rank">#6</span><div class="pm-body"><div class="pm-title">Didn't stick to strategy</div><div class="pm-detail">#6,28,30,34,42 — knew the rules, didn't follow them.</div></div><span class="pm-count">5×</span></div>
+        <div class="pm-row"><span class="pm-rank">#7</span><div class="pm-body"><div class="pm-title">ES correlation gate violated</div><div class="pm-detail">#20,80,95,97 — 4 preventable losses. One check that takes 10 seconds.</div></div><span class="pm-count">4×</span></div>
+        <div class="pm-row"><span class="pm-rank">#7</span><div class="pm-body"><div class="pm-title">Traded against / ignored bias</div><div class="pm-detail">#20,34,38,76 — entered opposite HTF direction or with uncertain bias unflagged.</div></div><span class="pm-count">4×</span></div>
+        <div class="pm-row"><span class="pm-rank">#7</span><div class="pm-body"><div class="pm-title">Session rule violation</div><div class="pm-detail">#4,8,12,13 — market not opened, entered late in session.</div></div><span class="pm-count">4×</span></div>
+        <div class="pm-row"><span class="pm-rank">#10</span><div class="pm-body"><div class="pm-title">Social contagion</div><div class="pm-detail">#24,46 — rushed because friend was trading, copied DodgyDD trade. Documented and real.</div></div><span class="pm-count">2×</span></div>
+      </div>
+
+      <!-- S3: YOUR PATTERNS -->
+      <div class="section-title">Your Patterns</div>
+
+      <div class="psych-pattern-card danger">
+        <div class="ppc-head"><span class="ppc-icon">💣</span><span class="ppc-title">The Eval Spiral</span></div>
+        <div class="ppc-body">You have blown <strong>7 funded accounts</strong>. Not from bad strategy. From gambling under eval pressure. The sequence is always identical: <strong>buy eval → trade well → bad stretch → pressure → gamble → blown → repeat</strong>. There is no version of this where gambling saves the account. There has never been one.</div>
+        <div class="ppc-dynamic" id="psych-eval-dynamic">Open Stats tab first to load live data.</div>
+      </div>
+
+      <div class="psych-pattern-card amber-border">
+        <div class="ppc-head"><span class="ppc-icon">🛌</span><span class="ppc-title">Physical State = Trading Quality</span></div>
+        <div class="ppc-body">Hungover, anxious, sleep-deprived = guaranteed bad trade. <strong>Rows 49, 86, 104, 109 are all gambles</strong>. All linked to impaired physical state. 100% correlation across every documented case. This is not a trading problem. It is a lifestyle problem that walks into the trading room.</div>
+        <div class="ppc-dynamic" id="psych-state-dynamic">Open Stats tab first to load live data.</div>
+      </div>
+
+      <div class="psych-pattern-card">
+        <div class="ppc-head"><span class="ppc-icon">🎭</span><span class="ppc-title">The Two Modes</span></div>
+        <div class="ppc-body">You are not one trader. You are two. <strong>Mode 1</strong> is disciplined, patient, full checklist, waits for A+ setups. <strong>Mode 2</strong> is reckless, rushed, skips ES, forces trades. External conditions — not intention — determine which one shows up. The goal isn't to trade better. It's to refuse to open the platform when Mode 2 has arrived.</div>
+        <div class="ppc-dynamic" id="psych-modes-dynamic">Open Stats tab first to load live data.</div>
+      </div>
+
+      <div class="psych-pattern-card amber-border">
+        <div class="ppc-head"><span class="ppc-icon">📈</span><span class="ppc-title">Post-Win FOMO</span></div>
+        <div class="ppc-body"><strong>Rows 18–19 and 34–36</strong> both show the same pattern: win → FOMO → second trade → loss, same day. After a win, your filter drops. You feel untouchable. The market does not share that opinion. <strong>After a win, you are done for the session.</strong></div>
+        <div class="ppc-dynamic" id="psych-fomo-dynamic">Open Stats tab first to load live data.</div>
+      </div>
+
+      <!-- S4: RULES YOU BREAK -->
+      <div class="section-title">The Rules You Break</div>
+      <div class="psych-rules">
+        <h3>Non-Negotiables — Evidence-Backed</h3>
+        <div class="pr-row"><span class="pr-icon">🚫</span><div class="pr-body"><div class="pr-rule">State &lt; 7/10: DO NOT TRADE</div><div class="pr-evidence">Rows 49, 86, 104, 109 — every low-state session ended in a gamble. No exceptions in the dataset.</div></div></div>
+        <div class="pr-row"><span class="pr-icon">📊</span><div class="pr-body"><div class="pr-rule">ES uncorrelated: DO NOT ENTER</div><div class="pr-evidence">Rows 23, 58, 83, 98 — 4 preventable losses from skipping one check that takes 10 seconds.</div></div></div>
+        <div class="pr-row"><span class="pr-icon">🛑</span><div class="pr-body"><div class="pr-rule">After daily loss limit: CLOSE PLATFORM</div><div class="pr-evidence">Multiple gamble sequences in the dataset began after a loss. Revenge trading has never worked once.</div></div></div>
+        <div class="pr-row"><span class="pr-icon">💸</span><div class="pr-body"><div class="pr-rule">Eval drawdown pressure: NEVER GAMBLE</div><div class="pr-evidence">7 blown funded accounts. The pattern is identical every time. Gambling has never saved one.</div></div></div>
+        <div class="pr-row"><span class="pr-icon">👥</span><div class="pr-body"><div class="pr-rule">Friends nearby: DO NOT TRADE</div><div class="pr-evidence">Row 27 — rushed entry because a friend was trading. Social contagion is documented and real.</div></div></div>
+        <div class="pr-row"><span class="pr-icon">⚖️</span><div class="pr-body"><div class="pr-rule">A- or below: HALF SIZE, NO EXCEPTIONS</div><div class="pr-evidence">A- win rate is 31%. You take A- at full size by calling it A. The data caught the grade inflation.</div></div></div>
+      </div>
+
+      <!-- S5: LIVE BEHAVIOUR MONITOR -->
+      <div class="section-title">Live Behaviour Monitor</div>
+      <div class="psych-monitor">
+        <h3>Your Live Trades</h3>
+        <div id="psych-monitor-content">
+          <div class="empty-state" style="padding:20px">Open Stats tab first to load live trade data, then return here.</div>
+        </div>
+      </div>
+
+      <!-- S6: TODAY'S REMINDERS -->
+      <div class="section-title">Today's Reminders</div>
+      <div class="psych-reminders">
+        <h3>Read Before Every Session</h3>
+        <div class="reminder-item"><span class="ri-icon">🚨</span><div class="ri-text">If physical or mental is &lt; 7: <em>close the app</em>. The market will be there tomorrow.</div></div>
+        <div class="reminder-item"><span class="ri-icon">📊</span><div class="ri-text">Check ES before every entry. <em>4 documented losses</em> from skipping this one check.</div></div>
+        <div class="reminder-item"><span class="ri-icon">🏆</span><div class="ri-text">After a win: <em>you are done</em>. The FOMO feeling is not a signal. It's a trap.</div></div>
+        <div class="reminder-item"><span class="ri-icon">⚖️</span><div class="ri-text">A- means <em>half size</em>. Always. No inflation. No exceptions.</div></div>
+        <div class="reminder-item"><span class="ri-icon">🚪</span><div class="ri-text"><em>Walking away IS the trade</em>. Not trading on a bad day has higher EV than any B-grade setup.</div></div>
+      </div>
+
+    </div><!-- /psych -->
+
     <!-- ══════════════════════════════════ SETTINGS -->
     <div class="panel" id="panel-settings">
       <div class="section-title">Google Sheets Connection</div>
@@ -760,6 +953,10 @@ nav.bottom button svg{width:20px;height:20px;}
     <button onclick="switchTab('review',this)" id="nav-review">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg>
       Journal
+    </button>
+    <button onclick="switchTab('psych',this)" id="nav-psych">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+      Psych
     </button>
     <button onclick="switchTab('settings',this)" id="nav-settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
@@ -965,10 +1162,11 @@ function switchTab(tab, btn) {
   document.querySelectorAll('nav.bottom button').forEach(function(b) { b.classList.remove('active'); });
   document.getElementById('panel-'+tab).classList.add('active');
   btn.classList.add('active');
-  var subs = {checklist:'Pre-Session Checklist', trade:'Trade Entry', stats:'Performance', review:'Trade Journal', settings:'Settings'};
+  var subs = {checklist:'Pre-Session Checklist', trade:'Trade Entry', stats:'Performance', review:'Trade Journal', psych:'Psychology', settings:'Settings'};
   document.getElementById('header-sub').textContent = subs[tab] || 'NQ/MNQ Futures';
   if (tab === 'stats') loadDashboard();
   if (tab === 'review') renderJournal();
+  if (tab === 'psych') renderPsychology();
 }
 
 // ── BUTTON GROUP LOGIC ─────────────────────────────────
@@ -1828,6 +2026,109 @@ function updateConnStatus(connected) {
   if (connected === undefined) connected = !!STATE.webAppUrl;
   dot.className = 'status-dot '+(connected ? 'connected' : 'disconnected');
   if (detail) detail.textContent = connected ? 'Connected — '+STATE.webAppUrl : (STATE.webAppUrl ? 'Not verified — '+STATE.webAppUrl : 'Not configured');
+}
+
+// ── PSYCHOLOGY ─────────────────────────────────────────
+function renderPsychology() {
+  var trades = STATE.allTrades;
+
+  // Live edge badge
+  var liveEdgeEl = document.getElementById('psych-live-edge');
+  if (trades && trades.length > 0) {
+    var livePlus = trades.filter(function(t){ return t.grade === 'A+' || t.grade === 'A'; });
+    var liveWins = livePlus.filter(function(t){ return t.outcome === 'WIN' || t.outcome === 'WIN PARTIAL'; }).length;
+    var liveLoss = livePlus.filter(function(t){ return t.outcome === 'LOSS' || t.outcome === 'LOSS PARTIAL'; }).length;
+    var liveWR = (liveWins + liveLoss) > 0 ? Math.round(liveWins / (liveWins + liveLoss) * 100) : null;
+    var liveHtml = '<div class="psych-live-badge">🟢 Live A/A+ win rate: ' + (liveWR !== null ? liveWR + '%' : '—') + ' (' + trades.length + ' live trades)</div>';
+    liveEdgeEl.innerHTML = liveHtml;
+  } else {
+    liveEdgeEl.innerHTML = '';
+  }
+
+  if (!trades || !trades.length) return; // static content already rendered in HTML
+
+  // Pattern card: Eval Spiral — show emotion/exec context
+  var gambles = trades.filter(function(t){ return t.outcome === 'GAMBLE'; });
+  var evalEl = document.getElementById('psych-eval-dynamic');
+  if (gambles.length > 0) {
+    evalEl.innerHTML = '⚠️ <strong>' + gambles.length + ' gamble' + (gambles.length > 1 ? 's' : '') + ' in live data.</strong> The pattern is active. Review each one before trading tomorrow.';
+    evalEl.style.color = 'var(--red)';
+  } else {
+    evalEl.innerHTML = '✓ <strong>No gambles logged yet.</strong> Keep it that way. The account you save is yours.';
+    evalEl.style.color = 'var(--green)';
+  }
+
+  // Pattern card: Physical State — avg score + low-state sessions
+  var stateEl = document.getElementById('psych-state-dynamic');
+  var emotionScores = trades.map(function(t){ return parseInt(t.emotionScore) || 0; }).filter(function(v){ return v > 0; });
+  if (emotionScores.length > 0) {
+    var avgEmo = (emotionScores.reduce(function(a,b){return a+b;},0) / emotionScores.length).toFixed(1);
+    var lowEmo = emotionScores.filter(function(v){ return v < 5; }).length;
+    var stateColor = parseFloat(avgEmo) >= 7 ? 'var(--green)' : parseFloat(avgEmo) >= 5 ? 'var(--amber)' : 'var(--red)';
+    stateEl.innerHTML = 'Avg emotion score (live): <strong style="color:' + stateColor + '">' + avgEmo + '/10</strong>. Sessions with score &lt;5: <strong style="color:var(--red)">' + lowEmo + '</strong>.';
+  } else {
+    stateEl.innerHTML = 'No emotion scores yet — log trades with self-assessment filled in.';
+  }
+
+  // Pattern card: Two Modes — last 5 trades emotion dots
+  var modesEl = document.getElementById('psych-modes-dynamic');
+  var last5 = trades.slice(-5);
+  if (last5.length > 0) {
+    var dotsHtml = 'Last ' + last5.length + ' trades — emotion score: <div class="emotion-dots">';
+    last5.forEach(function(t) {
+      var score = parseInt(t.emotionScore) || 0;
+      var color = score >= 7 ? 'var(--green)' : score >= 5 ? 'var(--amber)' : score > 0 ? 'var(--red)' : 'var(--surface2)';
+      var bg = score >= 7 ? 'var(--green-bg)' : score >= 5 ? 'var(--amber-bg)' : score > 0 ? 'var(--red-bg)' : 'var(--surface2)';
+      dotsHtml += '<div class="emotion-dot" style="color:' + color + ';background:' + bg + ';border:1px solid ' + color + '">' + (score || '—') + '</div>';
+    });
+    dotsHtml += '</div>';
+    modesEl.innerHTML = dotsHtml;
+  }
+
+  // Pattern card: Post-Win FOMO — detect win followed by same-session re-entry
+  var fomoEl = document.getElementById('psych-fomo-dynamic');
+  var fomoCount = 0;
+  for (var i = 0; i < trades.length - 1; i++) {
+    var curr = trades[i];
+    var next = trades[i+1];
+    var currWin = curr.outcome === 'WIN' || curr.outcome === 'WIN PARTIAL';
+    var sameDay = curr.date && next.date && curr.date === next.date;
+    if (currWin && sameDay) fomoCount++;
+  }
+  if (fomoCount > 0) {
+    fomoEl.innerHTML = '⚠️ <strong>' + fomoCount + ' post-win re-entr' + (fomoCount > 1 ? 'ies' : 'y') + ' detected in live data.</strong> The pattern from rows 18–19 is repeating.';
+    fomoEl.style.color = 'var(--red)';
+  } else {
+    fomoEl.innerHTML = '✓ <strong>No post-win re-entries detected yet.</strong> After a win: close the platform.';
+    fomoEl.style.color = 'var(--green)';
+  }
+
+  // Live Behaviour Monitor (Section 5)
+  var monitorEl = document.getElementById('psych-monitor-content');
+  var wins   = trades.filter(function(t){ return t.outcome==='WIN'||t.outcome==='WIN PARTIAL'; }).length;
+  var losses = trades.filter(function(t){ return t.outcome==='LOSS'||t.outcome==='LOSS PARTIAL'; }).length;
+  var badLosses = trades.filter(function(t){ return t.goodBadLoss && t.goodBadLoss.toLowerCase().indexOf('bad') > -1; }).length;
+  var goodLosses = trades.filter(function(t){ return t.goodBadLoss && t.goodBadLoss.toLowerCase().indexOf('good loss') > -1; }).length;
+  var esAligned = trades.filter(function(t){ return t.esCorr === 'Aligned' || t.esCorr === 'Valid SMT Divergence'; }).length;
+  var esPct = trades.length > 0 ? Math.round(esAligned / trades.length * 100) : 0;
+  var pnl = trades.reduce(function(acc,t){ return acc+(parseFloat(t.pnl)||0); }, 0);
+
+  var lossQualityColor = losses > 0 && badLosses/losses > 0.5 ? 'var(--red)' : 'var(--green)';
+  var esColor = esPct >= 80 ? 'var(--green)' : esPct >= 60 ? 'var(--amber)' : 'var(--red)';
+
+  monitorEl.innerHTML =
+    '<div class="pm-stat-row">' +
+      '<div class="pm-stat"><div class="psv" style="color:var(--green)">' + wins + '</div><div class="psl">Wins</div></div>' +
+      '<div class="pm-stat"><div class="psv" style="color:var(--red)">' + losses + '</div><div class="psl">Losses</div></div>' +
+    '</div>' +
+    '<div class="pm-stat-row">' +
+      '<div class="pm-stat"><div class="psv" style="color:' + lossQualityColor + '">' + badLosses + '/' + losses + '</div><div class="psl">Bad losses</div></div>' +
+      '<div class="pm-stat"><div class="psv" style="color:' + esColor + '">' + esPct + '%</div><div class="psl">ES compliance</div></div>' +
+    '</div>' +
+    '<div class="pm-stat-row">' +
+      '<div class="pm-stat"><div class="psv" style="color:var(--purple)">' + gambles.length + '</div><div class="psl">Gambles</div></div>' +
+      '<div class="pm-stat"><div class="psv" style="color:' + (pnl >= 0 ? 'var(--green)' : 'var(--red)') + '">' + (pnl >= 0 ? '+' : '') + '£' + Math.round(pnl) + '</div><div class="psl">Total P&L</div></div>' +
+    '</div>';
 }
 </script>
 </body>
