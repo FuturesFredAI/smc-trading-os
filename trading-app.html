@@ -704,7 +704,7 @@ nav.bottom button svg{width:20px;height:20px;}
 
     <!-- ══════════════════════════════════ STATS -->
     <div class="panel" id="panel-stats">
-      <button class="refresh-btn" onclick="loadDashboard()">↻ Refresh from Sheet</button>
+      <button class="refresh-btn" onclick="loadDashboard(true)">↻ Refresh from Sheet</button>
 
       <div class="section-title">Overview</div>
       <div class="stat-row">
@@ -1051,7 +1051,8 @@ var STATE = {
   webAppUrl: localStorage.getItem('smc_webapp_url') || 'https://smc-proxy.futures-freddie.workers.dev',
   photoData: null,
   equityChart: null,
-  allTrades: []
+  allTrades: [],
+  lastFetch: 0
 };
 
 // ── PWA SERVICE WORKER ─────────────────────────────────
@@ -1446,15 +1447,18 @@ function apiGet(cb) {
 }
 
 // ── DASHBOARD / STATS ──────────────────────────────────
-function loadDashboard() {
+function loadDashboard(force) {
   var cached = JSON.parse(localStorage.getItem('smc_trades') || '[]');
   if (cached.length) renderDashboard(cached, 0); // render from cache immediately
   if (!STATE.webAppUrl) return;
+  var now = Date.now();
+  if (!force && (now - STATE.lastFetch) < 60000) return; // throttle: max 1 fetch per 60s
+  STATE.lastFetch = now;
   toast('Refreshing...', '');
   apiGet(function(ok, data) {
     if (ok && data && data.trades) {
-      // Merge API trades with localStorage (API trades are deduped by date)
       STATE.allTrades = data.trades;
+      localStorage.setItem('smc_trades', JSON.stringify(data.trades));
       renderDashboard(data.trades, data.lowStateSessions || 0);
       toast('Updated ✓', 'success');
     }
@@ -1741,10 +1745,25 @@ var GB = {'A+':'rgba(0,212,131,.15)','A':'rgba(34,197,94,.15)','A-':'rgba(132,20
 function getJournalTrades() {
   var local = JSON.parse(localStorage.getItem('smc_trades') || '[]');
   var api = STATE.allTrades || [];
-  var keys = {};
-  local.forEach(function(t){ keys[(t.date||'')+'_'+(t.grade||'')] = true; });
-  api.forEach(function(at){ if (!keys[(at.date||'')+'_'+(at.grade||'')]) local.push(at); });
-  return local.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  // API trades are authoritative. Add local trades only if no API trade
+  // matches on grade + outcome within 1 day (handles BST/UTC off-by-one).
+  function datesWithin1Day(a, b) {
+    if (!a || !b) return false;
+    var pa = a.split('-'); var pb = b.split('-');
+    var da = new Date(+pa[0], +pa[1]-1, +pa[2]);
+    var db = new Date(+pb[0], +pb[1]-1, +pb[2]);
+    return Math.abs(da - db) <= 86400000;
+  }
+  var result = api.slice();
+  local.forEach(function(lt) {
+    var isDup = api.some(function(at) {
+      return (lt.grade||'') === (at.grade||'') &&
+             (lt.outcome||'') === (at.outcome||'') &&
+             datesWithin1Day(lt.date, at.date);
+    });
+    if (!isDup) result.push(lt);
+  });
+  return result.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
 }
 
 function setJournalView(view, btn) {
