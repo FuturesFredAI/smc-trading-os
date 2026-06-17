@@ -1407,17 +1407,25 @@ function submitTrade() {
     photoBase64:STATE.photoData||''
   };
   var btn = document.getElementById('tr-submit');
+  if (btn.dataset.submitted === '1') { toast('Already submitted — check Trade Log', 'error'); return; }
   btn.textContent = 'Saving trade...'; btn.disabled = true;
   apiPost(data, function(ok, err) {
-    btn.textContent = 'Log Trade'; btn.disabled = false;
     if (ok) {
+      btn.textContent = 'Saved ✓'; btn.disabled = true; btn.dataset.submitted = '1';
       toast('Trade logged ✓', 'success');
       var cache = JSON.parse(localStorage.getItem('smc_trades') || '[]');
       cache.push(data); localStorage.setItem('smc_trades', JSON.stringify(cache));
       STATE.photoData = null;
       document.getElementById('photo-preview').style.display = 'none';
       document.getElementById('photo-filename').textContent = 'No photo selected';
-    } else { toast('Error: '+(err||'Check connection'), 'error'); }
+    } else if (err && (err.toLowerCase().indexOf('quota') > -1 || err.toLowerCase().indexOf('exceeded') > -1)) {
+      // Quota errors: trade likely saved despite the error — lock the button
+      btn.textContent = 'Check Sheet'; btn.disabled = true; btn.dataset.submitted = '1';
+      toast('Trade saved (quota warning — check Sheet to confirm)', 'success');
+    } else {
+      btn.textContent = 'Log Trade'; btn.disabled = false;
+      toast('Error: '+(err||'Check connection'), 'error');
+    }
   });
 }
 
