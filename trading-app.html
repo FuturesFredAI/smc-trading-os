@@ -610,7 +610,10 @@ nav.bottom button svg{width:20px;height:20px;}
           <button data-v="EQH">EQH</button><button data-v="EQL">EQL</button>
           <button data-v="ITH">ITH</button><button data-v="ITL">ITL</button>
           <button data-v="Data High">Data High</button><button data-v="Data Low">Data Low</button>
-          <button data-v="LRLR">LRLR</button><button data-v="None">None</button>
+          <button data-v="LRLR">LRLR</button>
+          <button data-v="Session High">Sess High</button><button data-v="Session Low">Sess Low</button>
+          <button data-v="Unmitigated FVG">UFVG</button>
+          <button data-v="None">None</button>
         </div>
       </div>
       <div class="section-title" style="margin-top:14px;">Premium / Discount</div>
@@ -1039,7 +1042,7 @@ nav.bottom button svg{width:20px;height:20px;}
         </div>
       </div>
 
-      <div style="font-size:11px;color:var(--muted);text-align:center;padding:8px 0 4px;">7 Valid Targets: EQH · EQL · ITH · ITL · Data Highs · Data Lows · LRLR</div>
+      <div style="font-size:11px;color:var(--muted);text-align:center;padding:8px 0 4px;">Valid Targets: EQH · EQL · ITH · ITL · Data Highs · Data Lows · LRLR · Sess High · Sess Low · UFVG</div>
     </div>
   </div>
 </div>
@@ -1413,13 +1416,18 @@ function submitTrade() {
     if (ok) {
       btn.textContent = 'Saved ✓'; btn.disabled = true; btn.dataset.submitted = '1';
       toast('Trade logged ✓', 'success');
+      // Save photo separately by date so it persists even when API data overwrites trade cache
+      if (STATE.photoData) {
+        localStorage.setItem('smc_photo_' + data.date, STATE.photoData);
+      }
       var cache = JSON.parse(localStorage.getItem('smc_trades') || '[]');
       cache.push(data); localStorage.setItem('smc_trades', JSON.stringify(cache));
       STATE.photoData = null;
       document.getElementById('photo-preview').style.display = 'none';
       document.getElementById('photo-filename').textContent = 'No photo selected';
     } else if (err && (err.toLowerCase().indexOf('quota') > -1 || err.toLowerCase().indexOf('exceeded') > -1)) {
-      // Quota errors: trade likely saved despite the error — lock the button
+      // Quota errors: trade likely saved — lock button, save photo locally
+      if (STATE.photoData) { localStorage.setItem('smc_photo_' + data.date, STATE.photoData); }
       btn.textContent = 'Check Sheet'; btn.disabled = true; btn.dataset.submitted = '1';
       toast('Trade saved (quota warning — check Sheet to confirm)', 'success');
     } else {
@@ -1967,16 +1975,19 @@ function buildJCard(t) {
   var dirColor = t.direction==='LONG'?'var(--green)':t.direction==='SHORT'?'var(--red)':'var(--muted)';
   var gc = GC[t.grade]||'var(--muted)'; var gb = GB[t.grade]||'var(--surface2)';
   var card = document.createElement('div'); card.className = 'jcard';
-  var hasPhoto = t.photoBase64 && t.photoBase64.indexOf('data:') === 0;
-  // Convert Drive file URL to embeddable URL (for API-loaded trades)
+  // Priority: 1) locally-stored base64 by date  2) base64 on trade obj  3) Drive thumbnail URL
+  var localPhoto = localStorage.getItem('smc_photo_' + t.date) || '';
+  var hasPhoto = (localPhoto && localPhoto.indexOf('data:') === 0)
+              || (t.photoBase64 && t.photoBase64.indexOf('data:') === 0);
   var driveEmbed = '';
   if (!hasPhoto && t.photoUrl && t.photoUrl.indexOf('drive.google.com') > -1) {
     var match = t.photoUrl.match(/[-\w]{25,}/);
-    if (match) driveEmbed = 'https://drive.google.com/uc?id='+match[0];
+    if (match) driveEmbed = 'https://drive.google.com/thumbnail?id='+match[0]+'&sz=w800';
   }
-  var photoSrc = hasPhoto ? t.photoBase64 : driveEmbed;
+  var photoSrc = localPhoto || t.photoBase64 || driveEmbed;
   var photoHtml = photoSrc
-    ? '<img class="jcard-photo" src="'+photoSrc+'" alt="Chart">'
+    ? '<img class="jcard-photo" src="'+photoSrc+'" alt="Chart" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'
+      + '<div class="jcard-photo-placeholder" style="display:none">🔒 Photo saved but not public — see Apps Script fix</div>'
     : '<div class="jcard-photo-placeholder">📷 No chart photo — attach one next time</div>';
 
   var detailRows = '';
