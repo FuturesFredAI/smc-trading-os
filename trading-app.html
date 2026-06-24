@@ -787,8 +787,8 @@ nav.bottom button svg{width:20px;height:20px;}
       <!-- S1: YOUR EDGE -->
       <div class="section-title">Your Edge</div>
       <div class="psych-hero">
-        <div class="ph-headline">The strategy has never lost.<br>Not once. When applied correctly.</div>
-        <div class="ph-sub">109 trades. 20 graded trades were mistakes confirmed by your own notes. Strip those out: <strong>A+, A, A-, B+ all have 100% clean win rates.</strong> The strategy is not the problem. It has never been the problem.</div>
+        <div class="ph-headline">91% of your losses were<br>avoidable execution mistakes.</div>
+        <div class="ph-sub">109 trades. 20 graded trades were mistakes confirmed by your own notes. Strip those out: <strong>A+, A, A-, B+ all have 100% clean win rates on legitimate setups.</strong> Good losses exist — Trade 4 proves it. A loss taken correctly, with ES uncorrelated, is not a failure. It's the process working. The problem has never been the strategy. It has always been execution.</div>
       </div>
 
       <div class="psych-grade-bars" id="psych-grade-bars">
@@ -891,7 +891,7 @@ nav.bottom button svg{width:20px;height:20px;}
         <div class="pr-row"><span class="pr-icon">🛑</span><div class="pr-body"><div class="pr-rule">After daily loss limit: CLOSE PLATFORM</div><div class="pr-evidence">Multiple gamble sequences in the dataset began after a loss. Revenge trading has never worked once.</div></div></div>
         <div class="pr-row"><span class="pr-icon">💸</span><div class="pr-body"><div class="pr-rule">Eval drawdown pressure: NEVER GAMBLE</div><div class="pr-evidence">7 blown funded accounts. The pattern is identical every time. Gambling has never saved one.</div></div></div>
         <div class="pr-row"><span class="pr-icon">👥</span><div class="pr-body"><div class="pr-rule">Friends nearby: DO NOT TRADE</div><div class="pr-evidence">Row 27 — rushed entry because a friend was trading. Social contagion is documented and real.</div></div></div>
-        <div class="pr-row"><span class="pr-icon">⚖️</span><div class="pr-body"><div class="pr-rule">A- or below: HALF SIZE, NO EXCEPTIONS</div><div class="pr-evidence">A- win rate is 31%. You take A- at full size by calling it A. The data caught the grade inflation.</div></div></div>
+        <div class="pr-row"><span class="pr-icon">⚖️</span><div class="pr-body"><div class="pr-rule">A- or below: HALF SIZE, NO EXCEPTIONS</div><div class="pr-evidence">A- setups carry higher execution risk — chop, partial confluences, timing uncertainty. Half size protects you from mistakes at this grade. The clean win rate is 100%, but the margin for error is smaller. Grade inflation (calling A- an A) is your documented pattern.</div></div></div>
       </div>
 
       <!-- S5: LIVE BEHAVIOUR MONITOR -->
@@ -1701,7 +1701,7 @@ function renderInsights(trades) {
   // Insight 1: Loss pattern — bad losses vs good losses
   var losses = trades.filter(function(t){ return t.outcome==='LOSS'||t.outcome==='LOSS PARTIAL'; });
   if (losses.length >= 3) {
-    var badLosses = losses.filter(function(t){ return t.goodBadLoss && t.goodBadLoss.toLowerCase().indexOf('bad') > -1; }).length;
+    var badLosses = losses.filter(function(t){ return t.goodBadLoss && t.goodBadLoss.toLowerCase() === 'bad loss'; }).length;
     var pct = Math.round(badLosses/losses.length*100);
     if (pct > 50) {
       insights.push({icon:'⚠️', title:'Loss quality: '+pct+'% avoidable', body:'<strong>'+badLosses+' of '+losses.length+' losses</strong> were classified as bad losses. Target is under 20%. Focus on process before entry.'});
@@ -2101,9 +2101,9 @@ function renderPsychology() {
   var emotionScores = trades.map(function(t){ return parseInt(t.emotionScore) || 0; }).filter(function(v){ return v > 0; });
   if (emotionScores.length > 0) {
     var avgEmo = (emotionScores.reduce(function(a,b){return a+b;},0) / emotionScores.length).toFixed(1);
-    var lowEmo = emotionScores.filter(function(v){ return v < 5; }).length;
+    var lowEmo = emotionScores.filter(function(v){ return v < 7; }).length;
     var stateColor = parseFloat(avgEmo) >= 7 ? 'var(--green)' : parseFloat(avgEmo) >= 5 ? 'var(--amber)' : 'var(--red)';
-    stateEl.innerHTML = 'Avg emotion score (live): <strong style="color:' + stateColor + '">' + avgEmo + '/10</strong>. Sessions with score &lt;5: <strong style="color:var(--red)">' + lowEmo + '</strong>.';
+    stateEl.innerHTML = 'Avg emotion score (live): <strong style="color:' + stateColor + '">' + avgEmo + '/10</strong>. Sessions below state gate (&lt;7): <strong style="color:' + (lowEmo > 0 ? 'var(--red)' : 'var(--green)') + '">' + lowEmo + '</strong>.';
   } else {
     stateEl.innerHTML = 'No emotion scores yet — log trades with self-assessment filled in.';
   }
@@ -2145,8 +2145,8 @@ function renderPsychology() {
   var monitorEl = document.getElementById('psych-monitor-content');
   var wins   = trades.filter(function(t){ return t.outcome==='WIN'||t.outcome==='WIN PARTIAL'; }).length;
   var losses = trades.filter(function(t){ return t.outcome==='LOSS'||t.outcome==='LOSS PARTIAL'; }).length;
-  var badLosses = trades.filter(function(t){ return t.goodBadLoss && t.goodBadLoss.toLowerCase().indexOf('bad') > -1; }).length;
-  var goodLosses = trades.filter(function(t){ return t.goodBadLoss && t.goodBadLoss.toLowerCase().indexOf('good loss') > -1; }).length;
+  var badLosses = trades.filter(function(t){ return (t.outcome==='LOSS'||t.outcome==='LOSS PARTIAL') && t.goodBadLoss && t.goodBadLoss.toLowerCase()==='bad loss'; }).length;
+  var goodLosses = trades.filter(function(t){ return (t.outcome==='LOSS'||t.outcome==='LOSS PARTIAL') && t.goodBadLoss && t.goodBadLoss.toLowerCase()==='good loss'; }).length;
   var esAligned = trades.filter(function(t){ return t.esCorr === 'Aligned' || t.esCorr === 'Valid SMT Divergence'; }).length;
   var esPct = trades.length > 0 ? Math.round(esAligned / trades.length * 100) : 0;
   var pnl = trades.reduce(function(acc,t){ return acc+(parseFloat(t.pnl)||0); }, 0);
