@@ -903,15 +903,16 @@ nav.bottom button svg{width:20px;height:20px;}
         </div>
       </div>
 
-      <!-- S6: TODAY'S REMINDERS -->
-      <div class="section-title">Today's Reminders</div>
+      <!-- S6: TODAY'S FOCUS -->
+      <div class="section-title">Today's Focus</div>
       <div class="psych-reminders">
-        <h3>Read Before Every Session</h3>
-        <div class="reminder-item"><span class="ri-icon">🚨</span><div class="ri-text">If physical or mental is &lt; 7: <em>close the app</em>. The market will be there tomorrow.</div></div>
-        <div class="reminder-item"><span class="ri-icon">📊</span><div class="ri-text">Check ES before every entry. <em>4 documented losses</em> from skipping this one check.</div></div>
-        <div class="reminder-item"><span class="ri-icon">🏆</span><div class="ri-text">After a win: <em>you are done</em>. The FOMO feeling is not a signal. It's a trap.</div></div>
-        <div class="reminder-item"><span class="ri-icon">⚖️</span><div class="ri-text">A- means <em>half size</em>. Always. No inflation. No exceptions.</div></div>
-        <div class="reminder-item"><span class="ri-icon">🚪</span><div class="ri-text"><em>Walking away IS the trade</em>. Not trading on a bad day has higher EV than any B-grade setup.</div></div>
+        <h3 id="psych-rem-heading">Read Before Every Session</h3>
+        <div id="psych-reminders-dynamic">
+          <!-- Fallback — replaced by renderContextReminders() when trade data loads -->
+          <div class="reminder-item"><span class="ri-icon">📊</span><div class="ri-text"><strong>Check ES before every entry.</strong><br>4 documented losses from skipping this one check that takes 10 seconds.</div></div>
+          <div class="reminder-item"><span class="ri-icon">🚶</span><div class="ri-text"><strong>Walking away IS the trade.</strong><br>Not trading on a bad day has higher EV than any B-grade setup.</div></div>
+          <div class="reminder-item"><span class="ri-icon">⚖️</span><div class="ri-text"><strong>A- means half size. No exceptions.</strong><br>Grade inflation is your documented pattern. Don't override the auto-grader.</div></div>
+        </div>
       </div>
 
     </div><!-- /psych -->
@@ -2066,6 +2067,148 @@ function updateConnStatus(connected) {
   if (detail) detail.textContent = connected ? 'Connected — '+STATE.webAppUrl : (STATE.webAppUrl ? 'Not verified — '+STATE.webAppUrl : 'Not configured');
 }
 
+// ── CONTEXT-AWARE REMINDERS ────────────────────────────
+function renderContextReminders(trades) {
+  var container = document.getElementById('psych-reminders-dynamic');
+  var heading   = document.getElementById('psych-rem-heading');
+  if (!container || !trades || !trades.length) return;
+
+  // --- Context signals ---
+  var lastTrade = trades[trades.length - 1];
+  var lastOutcome = lastTrade ? lastTrade.outcome : '';
+  var lastWin  = lastOutcome === 'WIN' || lastOutcome === 'WIN PARTIAL';
+  var lastLoss = lastOutcome === 'LOSS' || lastOutcome === 'LOSS PARTIAL';
+
+  // Win streak
+  var streak = 0;
+  for (var i = trades.length - 1; i >= 0; i--) {
+    var o = trades[i].outcome;
+    if (o === 'WIN' || o === 'WIN PARTIAL') { streak++; } else { break; }
+  }
+
+  // ES compliance
+  var esGood = trades.filter(function(t){ return t.esCorr === 'Aligned' || t.esCorr === 'Valid SMT Divergence'; }).length;
+  var esPct  = Math.round(esGood / trades.length * 100);
+
+  // Current EST hour (for lunch zone)
+  var estStr   = new Date().toLocaleString('en-US', {timeZone: 'America/New_York', hour: 'numeric', minute: 'numeric', hour12: false});
+  var estParts = estStr.split(':');
+  var estHour  = parseFloat(estParts[0]) + parseFloat(estParts[1] || 0) / 60;
+  var lunchZone = estHour >= 12 && estHour < 13.5;
+
+  // --- Reminder pool (evaluated in priority order) ---
+  var triggered = [];
+
+  // 1. Lunch zone override — always top if active
+  if (lunchZone) {
+    triggered.push({
+      icon: '🚫',
+      accent: 'var(--red)',
+      title: 'LUNCH ZONE — Do not trade.',
+      body: 'Hard stop. 12:00–1:30pm EST. No setup is worth it. The NY PM session opens at 1:30pm.'
+    });
+  }
+
+  // 2. Post-win FOMO — last trade was a win
+  if (lastWin) {
+    triggered.push({
+      icon: '🏆',
+      accent: 'var(--amber)',
+      title: 'Last trade was a win. FOMO risk is active.',
+      body: 'Documented pattern (rows 18–19, 34–36): win → re-entry → loss, same session. If you re-enter, it must be A+ only. Otherwise you are done for the day.'
+    });
+  }
+
+  // 3. Revenge risk — last trade was a loss
+  if (lastLoss) {
+    triggered.push({
+      icon: '🛑',
+      accent: 'var(--red)',
+      title: 'Last trade was a loss. Revenge trading risk is high.',
+      body: 'Multiple gamble sequences in your data started the trade after a loss. Next setup must be A or A+ only. If you feel the urge to recover quickly — that\'s Mode 2. Close the platform.'
+    });
+  }
+
+  // 4. Streak overconfidence (only if no other win signal already added)
+  if (streak >= 3 && !lastLoss) {
+    triggered.push({
+      icon: '🔥',
+      accent: 'var(--amber)',
+      title: streak + '-trade win streak. Stay disciplined.',
+      body: 'Streaks end. Your checklist and criteria do not change because you\'re running hot. Same standards. Every trade.'
+    });
+  }
+
+  // 5. ES compliance warning
+  if (esPct < 80) {
+    triggered.push({
+      icon: '📊',
+      accent: 'var(--red)',
+      title: 'ES compliance is ' + esPct + '% — your biggest live issue.',
+      body: 'You\'re skipping the ES gate on ' + (100 - esPct) + '% of live trades. Historically that was 3.7%. It\'s now worse. One check. 10 seconds. Every time.'
+    });
+  }
+
+  // --- Default pool (fill remaining slots up to 3) ---
+  var defaults = [
+    {
+      icon: '📊',
+      accent: 'var(--muted)',
+      title: 'Check ES before every entry.',
+      body: '4 documented losses from skipping this one check.'
+    },
+    {
+      icon: '🚶',
+      accent: 'var(--muted)',
+      title: 'Walking away IS the trade.',
+      body: 'Not trading on a bad day has higher EV than any B-grade setup.'
+    },
+    {
+      icon: '⚖️',
+      accent: 'var(--muted)',
+      title: 'A- means half size. No exceptions.',
+      body: 'Grade inflation is your documented pattern. The grader catches it. Don\'t override it.'
+    },
+    {
+      icon: '🧠',
+      accent: 'var(--muted)',
+      title: 'State < 7/10: do not trade.',
+      body: 'Every session you traded below 7 physical or mental state ended in a gamble. No exceptions in the dataset.'
+    }
+  ];
+
+  // Skip ES default if already covered by the compliance warning
+  var hasESWarning = triggered.some(function(r){ return r.title.indexOf('ES compliance') > -1; });
+  var filteredDefaults = defaults.filter(function(d){
+    return !(hasESWarning && d.title.indexOf('ES') > -1);
+  });
+
+  for (var j = 0; j < filteredDefaults.length && triggered.length < 3; j++) {
+    triggered.push(filteredDefaults[j]);
+  }
+
+  // Cap at 3
+  var final = triggered.slice(0, 3);
+
+  // --- Update heading ---
+  var hasUrgent = final.some(function(r){ return r.accent === 'var(--red)'; });
+  heading.textContent = hasUrgent ? 'Active Warnings' : 'Read Before Every Session';
+  heading.style.color = hasUrgent ? 'var(--red)' : '';
+
+  // --- Render ---
+  var html = '';
+  final.forEach(function(r) {
+    html += '<div class="reminder-item">' +
+      '<span class="ri-icon">' + r.icon + '</span>' +
+      '<div class="ri-text">' +
+        '<strong style="color:' + r.accent + ';display:block;margin-bottom:2px;">' + r.title + '</strong>' +
+        r.body +
+      '</div>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+
 // ── PSYCHOLOGY ─────────────────────────────────────────
 function renderPsychology() {
   var trades = STATE.allTrades;
@@ -2140,6 +2283,9 @@ function renderPsychology() {
     fomoEl.innerHTML = '✓ <strong>No post-win re-entries detected yet.</strong> After a win: close the platform.';
     fomoEl.style.color = 'var(--green)';
   }
+
+  // Section 6: Context-aware reminders
+  renderContextReminders(trades);
 
   // Live Behaviour Monitor (Section 5)
   var monitorEl = document.getElementById('psych-monitor-content');
