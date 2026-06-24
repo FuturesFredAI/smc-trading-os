@@ -1254,17 +1254,17 @@ function updateAutoGrade() {
 
   if (nothingSelected) {
     grade = '—'; reason = 'Fill in confluences above';
-  } else if (bothLiq && hasFVGentry && cleanMomentum && hasTarget && !pdWrong) {
+  } else if (bothLiq && hasFVGentry && cleanMomentum && hasTarget && !pdWrong && !esBad) {
     grade = 'A+'; reason = 'Sweep + delivery + clean momentum + target';
-  } else if (hasLiquidity && hasFVGentry && cleanMomentum && hasTarget && pdCorrect) {
+  } else if (hasLiquidity && hasFVGentry && cleanMomentum && hasTarget && pdCorrect && !esBad) {
     grade = 'A'; reason = 'Sweep or delivery + clean momentum + target + correct P/D';
-  } else if (hasLiquidity && hasFVGentry && cleanMomentum && hasTarget && pdOff) {
+  } else if (hasLiquidity && hasFVGentry && cleanMomentum && hasTarget && pdOff && !esBad) {
     grade = 'A'; reason = 'Sweep or delivery + clean momentum + target';
-  } else if (hasLiquidity && hasFVGentry && someChop && hasTarget && esBad) {
-    grade = 'B+'; reason = 'A- setup but ES bad — choppy conditions, 0.25% max';
-  } else if (hasLiquidity && hasFVGentry && someChop && hasTarget) {
+  } else if (hasLiquidity && hasFVGentry && (cleanMomentum || someChop) && hasTarget && esBad) {
+    grade = 'B+'; reason = 'Good setup but ES bad (chopping/uncorrelated) — 0.25% max or skip';
+  } else if (hasLiquidity && hasFVGentry && someChop && hasTarget && !esBad) {
     grade = 'A-'; reason = 'Sweep/delivery + some chop — wait for body close';
-  } else if (hasLiquidity && hasFVGentry && cleanMomentum && hasTarget && pdWrong) {
+  } else if (hasLiquidity && hasFVGentry && cleanMomentum && hasTarget && pdWrong && !esBad) {
     grade = 'A-'; reason = 'Good setup but wrong side of P/D';
   } else if (bothLiq && hasFVGentry && someChop && !hasTarget) {
     grade = 'A-'; reason = 'Strong liquidity but no clear target — reduce size';
